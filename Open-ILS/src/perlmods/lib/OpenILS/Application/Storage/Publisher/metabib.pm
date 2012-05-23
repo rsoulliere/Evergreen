@@ -3259,6 +3259,7 @@ sub query_parser_fts_wrapper {
     $query = "$query preferred_language_weight($args{preferred_language_weight})"
         if ($args{preferred_language_weight} and !$base_plan->parse_tree->find_filter('preferred_language_weight') and !$base_plan->parse_tree->find_filter('preferred_language_multiplier'));
 
+<<<<<<< HEAD
 
     # we add these to the end of the query (last-wins) because in wrapper mode we want to retain the behaviour
     # of separately specified options taking precidenc -- IOW, the user should not be able to cause a change in,
@@ -3280,6 +3281,26 @@ sub query_parser_fts_wrapper {
     $query = "$query after($args{after})" if (defined($args{after}) and $args{after} =~ /^\d+$/);
     $query = "$query during($args{during})" if (defined($args{during}) and $args{during} =~ /^\d+$/);
     $query = "$query between($args{between}[0],$args{between}[1])"
+=======
+    $query = "estimation_strategy($args{estimation_strategy}) $query" if ($args{estimation_strategy});
+    $query = "site($args{org_unit}) $query" if ($args{org_unit});
+    $query = "pref_ou($args{pref_ou}) $query" if ($args{pref_ou});
+    $query = "depth($args{depth}) $query" if (defined($args{depth}));
+    $query = "sort($args{sort}) $query" if ($args{sort});
+    $query = "limit($args{limit}) $query" if ($args{limit});
+    $query = "core_limit($args{core_limit}) $query" if ($args{core_limit});
+    $query = "skip_check($args{skip_check}) $query" if ($args{skip_check});
+    $query = "superpage($args{superpage}) $query" if ($args{superpage});
+    $query = "offset($args{offset}) $query" if ($args{offset});
+    $query = "#metarecord $query" if ($self->api_name =~ /metabib/);
+    $query = "#available $query" if ($args{available});
+    $query = "#descending $query" if ($args{sort_dir} && $args{sort_dir} =~ /^d/i);
+    $query = "#staff $query" if ($self->api_name =~ /staff/);
+    $query = "before($args{before}) $query" if (defined($args{before}) and $args{before} =~ /^\d+$/);
+    $query = "after($args{after}) $query" if (defined($args{after}) and $args{after} =~ /^\d+$/);
+    $query = "during($args{during}) $query" if (defined($args{during}) and $args{during} =~ /^\d+$/);
+    $query = "between($args{between}[0],$args{between}[1]) $query"
+>>>>>>> upstream/rel_2_2
         if ( ref($args{between}) and @{$args{between}} == 2 and $args{between}[0] =~ /^\d+$/ and $args{between}[1] =~ /^\d+$/ );
 
 
