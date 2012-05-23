@@ -2,7 +2,7 @@ body {
 	margin:0;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
-	background: #00593d;
+	background: #252525;
 }
 
 img {
@@ -134,11 +134,11 @@ span.dash_divider {
 #dash_pickup { color: #1dd93c; }
 #dash_fines { color: #f41d36; }
 #header-wrap {
-    background: linear-gradient(#00593d, #007a54);
-    background: -moz-linear-gradient(#00593d, #007a54);
-    background: -o-linear-gradient(#00593d, #007a54);
-    background: -webkit-linear-gradient(#00593d, #007a54);
-    background-color: #007a54;
+	background: linear-gradient(#780032, #252525);    
+    background: -moz-linear-gradient(#780032, #252525);
+    background: -o-linear-gradient(#780032, #252525);
+    background: -webkit-linear-gradient(#780032, #252525);
+    background-color: #780032;
 }
 #header {
 	color: #fff;
@@ -157,7 +157,7 @@ span.dash_divider {
 }
 
 #header-links {
-	color: white;
+	color: #afafaf;
 	font-size: 11px;
 	font-weight: bold;
 	position: relative;
@@ -166,7 +166,7 @@ span.dash_divider {
 }
 
 #header-links a {
-	color: white;
+	color: #afafaf;
 	display: block;
 	float:left;
 	margin-right:22px;
@@ -1086,11 +1086,11 @@ div.facet_sidebar {
 }
 
 #footer-wrap {
-    background: linear-gradient(#007a54, #00593d);
-    background: -moz-linear-gradient(#007a54, #00593d);
-    background: -o-linear-gradient(#007a54, #00593d);
-    background: -webkit-linear-gradient(#007a54, #00593d);
-    background-color: #00593d;
+    background: linear-gradient(#F58220, #252525);
+    background: -moz-linear-gradient(#F58220, #252525);
+    background: -o-linear-gradient(#F58220, #252525);
+    background: -webkit-linear-gradient(#F58220, #252525);
+    background-color: #F58220;
 }
 
 #footer {
