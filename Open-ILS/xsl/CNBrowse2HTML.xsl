@@ -13,9 +13,17 @@
      <html>
        <head>
          <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+
+		<style type="text/css">
+			body {font-family: Verdana, Arial;}
+			body a { color: #990033; text-decoration: none;}
+			body a:visited { color:990033; text-decoration: none;}
+			body a:hover	{ color: #990033; text-decoration: underline;}
+		</style>
        </head>
-       <body>
+       <body style="font-family: Verdana, Arial;">
         <span>
+
 	 <a>
 	  <xsl:attribute name="href">
 	   <xsl:value-of select="$prev"/>
@@ -53,21 +61,19 @@
   </xsl:template>
 
   <xsl:template match="hold:volume">
-   <div style="border:solid #999999 1px;">
-    <span>
-     <dl>
-      <xsl:value-of select="@prefix"/>
+   <div style="border:solid #999999 1px; width:100%; float:left; padding: 5px; font-family: Verdana, Arial;">
+     <div style="float:left; width:80%; border:0px solid">
       <xsl:value-of select="@label"/>
-      <xsl:value-of select="@suffix"/>
-      <dd><xsl:apply-templates select="marc:record"/></dd>
-      <dd><xsl:value-of select="act:owning_lib/@name"/></dd>
-     </dl>
-    </span>
-   </div>
+<!-- -  <xsl:value-of select="act:owning_lib/@name"/>-->
+</div>
+                <xsl:apply-templates select="marc:record"/>
+
+  </div>
   </xsl:template>
 
   <xsl:template match="marc:record">
-   <img>
+
+<img style="vertical-align:top; margin: 0px 0px 0px 0px; float:right;" onerror="this.style.display='none'">
     <xsl:attribute name="src">
       <xsl:variable name="isbnraw"><xsl:value-of select="marc:datafield[@tag='020']/marc:subfield[@code='a']"/></xsl:variable>
       <xsl:choose>
@@ -81,9 +87,11 @@
       </xsl:choose>
     </xsl:attribute>
    </img>
-   <a>
+
+<div style="float:left; width:80%; border:0px solid">
+        <a>
     <xsl:attribute name="href">
-     <xsl:value-of select="concat('/opac/extras/unapi?format=htmlholdings-full;id=',@id)"/>
+     <xsl:value-of select="concat('/opac/extras/unapi?format=htmlholdingsmobile-full;id=',@id)"/>
     </xsl:attribute>
     <xsl:value-of select="marc:datafield[@tag='245']/marc:subfield[@code='a']"/>
    </a>
@@ -91,7 +99,9 @@
    <xsl:value-of select="marc:datafield[@tag='100']/marc:subfield[@code='a']"/>
    <xsl:text> / Published </xsl:text>
    <xsl:value-of select="marc:datafield[@tag='260']/marc:subfield[@code='c']|marc:datafield[@tag='261']/marc:subfield[@code='d']|marc:datafield[@tag='262']/marc:subfield[@code='d']"/>
-   <span>
+   </div>
+
+        <!-- <span>
      <xsl:attribute name="style">
       <xsl:text>font-size:smaller;</xsl:text>
      </xsl:attribute>
@@ -103,7 +113,8 @@
       <xsl:text>Dynamic Details</xsl:text>
      </a>
      <xsl:text>)</xsl:text>
-   </span>
-  </xsl:template>
+   </span>-->
+
+ </xsl:template>
 
 </xsl:stylesheet>
