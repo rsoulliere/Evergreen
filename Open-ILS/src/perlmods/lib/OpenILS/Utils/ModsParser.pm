@@ -20,15 +20,14 @@ my $isbn_xpath			= "//mods:mods/mods:identifier[\@type='isbn' and not(\@invalid)
 my $resource_xpath	= "//mods:mods/mods:typeOfResource";
 my $pub_xpath			= "//mods:mods/mods:originInfo//mods:dateIssued[\@encoding='marc']|" . 
 								"//mods:mods/mods:originInfo//mods:dateIssued[1]";
+my $pub_place_xpath  = "//mods:mods/mods:originInfo//mods:place//mods:placeTerm[\@type='text']";
 my $tcn_xpath			= "//mods:mods/mods:recordInfo/mods:recordIdentifier";
 my $publisher_xpath	= "//mods:mods/mods:originInfo//mods:publisher[1]";
 my $edition_xpath		= "//mods:mods/mods:originInfo//mods:edition[1]";
 my $abstract_xpath	= "//mods:mods/mods:abstract";
 my $related_xpath		= "";
 my $online_loc_xpath = "//mods:location/mods:url";
-my $physical_desc		= "(//mods:mods/mods:physicalDescription/mods:form|//mods:mods/mods:physicalDescription/mods:extent|".
-	"//mods:mods/mods:physicalDescription/mods:reformattingQuality|//mods:mods/mods:physicalDescription/mods:internetMediaType|".
-	"//mods:mods/mods:physicalDescription/mods:digitalOrigin)";
+my $physical_desc               = "//mods:physicalDescription/mods:extent"; 
 my $toc_xpath			= "//mods:tableOfContents";
 
 my $xpathset = {
@@ -354,10 +353,19 @@ sub start_mods_batch {
 	($self->{master_doc}->{publisher}) = 
 		$self->get_field_value( $mods, $publisher_xpath );
 
-	($self->{master_doc}->{edition}) =
+	my @pub_place = $self->get_field_value( $mods, $pub_place_xpath ); 
+ 	my @publisher = $self->get_field_value( $mods, $publisher_xpath );            
+	if (@pub_place && @publisher) {  
+ 		($self->{master_doc}->{publisher}) = $pub_place[0] . " : " . $publisher[0];  
+	} elsif (@pub_place) {  
+		($self->{master_doc}->{publisher}) = $pub_place[0];  
+ 	} elsif (@publisher) {  
+		($self->{master_doc}->{publisher}) = $publisher[0];  
+	} else {  
+ 		($self->{master_doc}->{publisher}) = undef;  
+ 	}  	
+($self->{master_doc}->{edition}) =
 		$self->get_field_value( $mods, $edition_xpath );
-
-
 
 # ------------------------------
 	# holds an array of [ link, title, link, title, ... ]
