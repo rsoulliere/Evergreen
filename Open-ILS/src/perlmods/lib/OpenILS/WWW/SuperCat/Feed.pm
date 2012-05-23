@@ -613,7 +613,7 @@ sub link {
 			'http://www.w3.org/1999/xhtml',
 			'xhtml:link',
 			undef,
-			{ rel => 'otherFormat', href => $id, title => "Dynamic Details" }
+			{ rel => 'otherFormat', href => $id, title => "Full Feeatured View" }
 		);
 		$linkid++;
 	} elsif ($type eq 'unapi-id') {
@@ -679,6 +679,62 @@ sub toString {
 
 package OpenILS::WWW::SuperCat::Feed::html::item;
 use base 'OpenILS::WWW::SuperCat::Feed::atom::item';
+
+
+#----------------------------------------------------------
+
+package OpenILS::WWW::SuperCat::Feed::htmlmobile;
+use base 'OpenILS::WWW::SuperCat::Feed::atom';
+
+sub new {
+	my $class = shift;
+	my $self = $class->SUPER::new;
+	$self->type('text/html');
+	return $self;
+}
+
+our ($_parser, $_xslt, $xslt_file);
+
+sub toString {
+	my $self = shift;
+	my $base = $self->base || '';
+	my $root = $self->root || '';
+	my $search = $self->search || '';
+	my $class = $self->class || '';
+	my $lib = $self->lib || '-';
+
+	$self->composeDoc;
+
+        $_parser ||= new XML::LibXML;
+        $_xslt ||= new XML::LibXSLT;
+
+	$xslt_file ||=
+                OpenSRF::Utils::SettingsClient
+       	                ->new
+               	        ->config_value( dirs => 'xsl' ).
+                "/ATOM2XHTML-M.xsl";
+
+        # parse the MODS xslt ...
+        my $atom2htmlM_xslt = $_xslt->parse_stylesheet( $_parser->parse_file($xslt_file) );
+
+	my $new_doc = $atom2htmlM_xslt->transform(
+		$self->{doc},
+		base_dir => "'$root'",
+		lib => "'$lib'",
+		searchTerms => "'$search'",
+		searchClass => "'$class'",
+	);
+
+	return $new_doc->toString(1); 
+}
+
+
+package OpenILS::WWW::SuperCat::Feed::htmlmobile::item;
+use base 'OpenILS::WWW::SuperCat::Feed::atom::item';
+
+
+
+
 
 #----------------------------------------------------------
 
@@ -746,6 +802,22 @@ sub new {
 
 package OpenILS::WWW::SuperCat::Feed::htmlholdings::item;
 use base 'OpenILS::WWW::SuperCat::Feed::htmlcard::item';
+
+
+
+package OpenILS::WWW::SuperCat::Feed::htmlholdingsmobile;
+use base 'OpenILS::WWW::SuperCat::Feed::htmlcard';
+
+sub new {
+	my $class = shift;
+	my $self = $class->SUPER::new;
+	$self->{xsl} = "/mobile-holdings.xsl";
+	return $self;
+}
+
+package OpenILS::WWW::SuperCat::Feed::htmlholdingsmobile::item;
+use base 'OpenILS::WWW::SuperCat::Feed::htmlcard::item';
+
 
 
 package OpenILS::WWW::SuperCat::Feed::marctxt;

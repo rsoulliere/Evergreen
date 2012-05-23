@@ -203,7 +203,7 @@ sub child_init {
         ->gather(1);
 
     $list = [ map { (keys %$_)[0] } @$list ];
-    push @$list, 'htmlholdings','html', 'marctxt', 'ris';
+    push @$list, 'htmlholdings','html', 'marctxt', 'ris','htmlmobile','htmlholdingsmobile';
 
     for my $browse_axis ( qw/title author subject topic series item-age/ ) {
         for my $record_browse_format ( @$list ) {
@@ -447,9 +447,12 @@ sub unapi {
     <format name='opac' type='text/html'/>
     <format name='html' type='text/html'/>
     <format name='htmlholdings' type='text/html'/>
+    <format name='htmlholdingsmobile' type='text/html'/>
+    <format name='htmlholdingsmobile-full' type='text/html'/>
     <format name='holdings_xml' type='application/xml'/>
     <format name='holdings_xml-full' type='application/xml'/>
     <format name='html-full' type='text/html'/>
+    <format name='htmlmobile' type='text/html'/>
     <format name='htmlholdings-full' type='text/html'/>
     <format name='marctxt' type='text/plain'/>
     <format name='ris' type='text/plain'/>
@@ -496,10 +499,13 @@ sub unapi {
     <format name='opac' type='text/html'/>
     <format name='html' type='text/html'/>
     <format name='htmlholdings' type='text/html'/>
+    <format name='htmlholdingsmobile' type='text/html'/>
     <format name='holdings_xml' type='application/xml'/>
     <format name='holdings_xml-full' type='application/xml'/>
     <format name='html-full' type='text/html'/>
+    <format name='htmlmobile' type='text/html'/>
     <format name='htmlholdings-full' type='text/html'/>
+    <format name='htmlholdingsmobile-full' type='text/html'/>
     <format name='marctxt' type='text/plain'/>
     <format name='ris' type='text/plain'/>
             FORMATS
@@ -600,7 +606,7 @@ sub unapi {
            @{ $supercat->request("open-ils.supercat.$type.formats")->gather(1) }
          and !grep
            { $_ eq $base_format }
-           qw/opac html htmlholdings marctxt ris holdings_xml/
+           qw/opac html htmlholdings htmlholdingsmobile marctxt ris htmlmobile holdings_xml/
     ) {
         # Escape user input before display
         $format = CGI::escapeHTML($format);
@@ -774,10 +780,18 @@ sub supercat {
                      <type>text/html</type>
                    </format>
                    <format>
+                     <name>htmlholdingsmobile</name>
+                     <type>text/html</type>
+                   </format>
+		   <format>
                      <name>html</name>
                      <type>text/html</type>
                    </format>
                    <format>
+                     <name>htmlholdingsmobile-full</name>
+                     <type>text/html</type>
+                   </format>
+		    <format>
                      <name>htmlholdings-full</name>
                      <type>text/html</type>
                    </format>
@@ -785,7 +799,11 @@ sub supercat {
                      <name>html-full</name>
                      <type>text/html</type>
                    </format>
-                   <format>
+                    <format>
+                     <name>htmlmobile</name>
+                     <type>text/html</type>
+                   </format>
+		<format>
                      <name>marctxt</name>
                      <type>text/plain</type>
                    </format>
@@ -834,6 +852,19 @@ sub supercat {
                  <type>text/html</type>
                </format>
                <format>
+                 <name>htmlholdingsmobile</name>
+                 <type>text/html</type>
+               </format>
+		<format>
+                 <name>htmlholdingsmobile-full</name>
+                 <type>text/html</type>
+               </format>
+		<format>
+                 <name>htmlmobile</name>
+                 <type>text/html</type>
+               </format>
+
+		<format>
                  <name>html</name>
                  <type>text/html</type>
                </format>
@@ -1122,7 +1153,7 @@ sub changes_feed {
     $feed->link(atom => $base . "/atom-full/$rtype/$axis/$limit/$date" => 'application/atom+xml');
     $feed->link(html => $base . "/html-full/$rtype/$axis/$limit/$date" => 'text/html');
     $feed->link(unapi => $unapi);
-
+    $feed->link(mobile => $base . "/rss2-full/$rtype/$axis/$limit/$date" => 'application/rss+xml');
     $feed->link(
         OPAC =>
         "http://$host/opac/$locale/skin/$skin/xml/rresult.xml?$scope" . "rt=list&" .
@@ -1183,7 +1214,9 @@ Content-type: application/opensearchdescription+xml; charset=utf-8
        template="$base/1.1/$lib/marcxml/$class/?searchTerms={searchTerms}&amp;startPage={startPage?}&amp;startIndex={startIndex?}&amp;count={count?}&amp;searchLang={language?}"/>
   <Url type="text/html"
        template="$base/1.1/$lib/html-full/$class/?searchTerms={searchTerms}&amp;startPage={startPage?}&amp;startIndex={startIndex?}&amp;count={count?}&amp;searchLang={language?}"/>
-  <LongName>Search $lib</LongName>
+   <Url type="text/html"
+       template="$base/1.1/$lib/htmlmobile/$class/?searchTerms={searchTerms}&amp;startPage={startPage?}&amp;startIndex={startIndex?}&amp;count={count?}&amp;searchLang={language?}"/>
+   <LongName>Search $lib</LongName>
   <Query role="example" searchTerms="harry+potter" />
   <Developer>Mike Rylander for GPLS/PINES</Developer>
   <Contact>feedback\@open-ils.org</Contact>
@@ -1415,6 +1448,11 @@ sub opensearch_feed {
         $base .  "/$version/$org/html-full/$class?searchTerms=$terms&searchSort=$sort&searchSortDir=$sortdir&searchLang=$lang" =>
         'text/html'
     );
+$feed->link(
+        'htmlmobile' =>
+        $base .  "/$version/$org/htmlmobile/$class?searchTerms=$terms&searchSort=$sort&searchSortDir=$sortdir&searchLang=$lang" =>
+        'text/html'
+    );
 
     $feed->link( 'unapi-server' => $unapi);
 
@@ -1465,8 +1503,8 @@ sub create_record_feed {
     $feed->base($base) if ($flesh);
     $feed->unapi($unapi) if ($flesh);
 
-    $type = 'atom' if ($type eq 'html');
-    $type = 'marcxml' if (($type eq 'htmlholdings') || ($type eq 'marctxt') || ($type eq 'ris'));
+    $type = 'atom' if ($type eq 'html' || $type eq 'htmlmobile' );
+    $type = 'marcxml' if (($type eq 'htmlholdings') || ($type eq 'marctxt') || ($type eq 'ris')) || ($type eq 'htmlholdingsmobile') ;
 
     #$records = $supercat->request( "open-ils.supercat.record.object.retrieve", $records )->gather(1);
 
@@ -1509,6 +1547,7 @@ sub create_record_feed {
         $node->link(opac => $feed->unapi . "?id=$item_tag&format=opac") if ($flesh > 0);
         $node->link(unapi => $feed->unapi . "?id=$item_tag") if ($flesh);
         $node->link('unapi-id' => $item_tag) if ($flesh);
+        $node->link(mobile => $feed->unapi . "?id=$item_tag&format=htmlholdingsmobile-full" => 'text/html') if ($flesh > 0);
     }
 
     return $feed;
