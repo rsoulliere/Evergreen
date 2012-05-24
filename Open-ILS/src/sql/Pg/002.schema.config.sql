@@ -87,7 +87,7 @@ CREATE TRIGGER no_overlapping_deps
     BEFORE INSERT OR UPDATE ON config.db_patch_dependencies
     FOR EACH ROW EXECUTE PROCEDURE evergreen.array_overlap_check ('deprecates');
 
-INSERT INTO config.upgrade_log (version, applied_to) VALUES ('0711', :eg_version); -- senator
+INSERT INTO config.upgrade_log (version, applied_to) VALUES ('0712', :eg_version); -- berick/miker
 
 CREATE TABLE config.bib_source (
 	id		SERIAL	PRIMARY KEY,
@@ -737,11 +737,14 @@ CREATE TABLE config.record_attr_index_norm_map (
 );
 
 CREATE TABLE config.coded_value_map (
-    id          SERIAL  PRIMARY KEY,
-    ctype       TEXT    NOT NULL REFERENCES config.record_attr_definition (name) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    code        TEXT    NOT NULL,
-    value       TEXT    NOT NULL,
-    description TEXT
+    id              SERIAL  PRIMARY KEY,
+    ctype           TEXT    NOT NULL REFERENCES config.record_attr_definition (name) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    code            TEXT    NOT NULL,
+    value           TEXT    NOT NULL,
+    description     TEXT,
+    opac_visible    BOOL    NOT NULL DEFAULT TRUE, -- For TPac selectors
+    search_label    TEXT,
+    is_simple       BOOL    NOT NULL DEFAULT FALSE
 );
 
 CREATE VIEW config.language_map AS SELECT code, value FROM config.coded_value_map WHERE ctype = 'item_lang';
