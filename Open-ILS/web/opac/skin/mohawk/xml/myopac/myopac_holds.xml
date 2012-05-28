@@ -1,7 +1,7 @@
 
 <div id='myopac_holds_div' xmlns:xi="http://www.w3.org/2001/XInclude" >
 
-	<script language='javascript' type='text/javascript' src='<!--#echo var="OILS_OPAC_JS_HOST"-->/skin/default/js/holds.js'> </script>
+	<script language='javascript' type='text/javascript' src='<!--#echo var="OILS_OPAC_JS_HOST"-->/skin/mohawk/js/holds.js'> </script>
 
 	<table width='100%'>
         <tbody><tr><td width='100%' align='right'>
