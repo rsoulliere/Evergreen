@@ -18,7 +18,7 @@ img {
 }
 
 a {
-	color: #00593d;
+	color: #B20838;
 }
 
 #search-wrapper input[type=text] {
@@ -287,7 +287,7 @@ span.dash_divider {
     border-radius: 10px 10px 0px 0px;
     font-weight: bold;
     color: white;
-    background: #69A088;
+    background: #F58220;
     font-weight: bold;
     text-decoration: none;
 }
@@ -297,7 +297,7 @@ span.dash_divider {
 }
 
 #adv_search_tabs a:hover, #acct_tabs a:hover, #acct_fines_tabs a:hover, #acct_checked_tabs a:hover, #acct_holds_tabs a:hover, #acct_prefs_tabs a:hover {
-    background: #00593d; 
+    background: #333333; 
     color: white;
     text-decoration: none;
 }
@@ -342,7 +342,7 @@ span.dash_divider {
 }
 
 #rdetail_results a {
-    color:#007a54;
+    color:#B20838;
     font-weight:bold;
     font-size: 1.2em;
 }
@@ -476,7 +476,7 @@ div.format_icon {
 
 .rdetail_extras {
 	height: 29px;
-	background: #417860;
+	background: #990033;
 	padding-top:1px;
 	margin-bottom: 10px;
 	margin-top: 10px;
@@ -729,7 +729,7 @@ div.format_icon {
 .results_header_nav1 .h1 {
 	font-size:14px;
 	font-weight:bold;
-	color:#007a54;
+	color:#990033;
 }
 
 .start_end_links_span {
@@ -840,7 +840,7 @@ div.result_place_hold {
 	height:22px;
 	font-size:14px;
 	font-weight:bold;
-	color:#007a54;
+	color:#990033;
 	padding: 0px 7px 0px 0px;
 	border-bottom: 1px dotted #ccc;
 }
@@ -938,7 +938,7 @@ div.result_place_hold {
 }
 
 #myopac_tabs, #adv_search_parent, #fines_payments_wrapper {
-	background: #007a54;
+	background: #990033;
 	padding-top:5px;
 	margin-bottom:20px;
 }
@@ -976,9 +976,7 @@ div.result_place_hold {
 	text-align:center;
 	padding-top:20px;
 	font-size:16px;
-	font-weight:bold;
-}
-
+	font-weight:bo990033
 .chili_link {
 	width:100px !important;
 	text-align: center !important;
@@ -1103,7 +1101,7 @@ div.facet_sidebar {
 #footer a {
 	color: white;
 	text-decoration: none;
-	text-shadow: 0 0 0.2em #00593d, 0 0 0.2em #00593d;
+	text-shadow: 0 0 0.2em #333333, 0 0 0.2em #333333;
 }
 
 #copyright_text, #footer_logo {
