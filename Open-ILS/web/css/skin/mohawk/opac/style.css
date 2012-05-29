@@ -91,7 +91,7 @@ div.select-wrapper:hover {
 #dash_wrapper div {
 	position: relative;
     vertical-align: middle;
-    background: #00593d;
+    background: #535353;
     border-radius: 5px;
     height: 3em;
     padding: 0em 1em 0em 1em;
@@ -101,7 +101,7 @@ span.dash_divider {
     margin: 0em 1em 0em 1em;
 	position: relative;
     top: 10px;
-    color: #007a54;
+    color: #F58220;
 }
 
 #dashboard {
