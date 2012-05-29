@@ -134,11 +134,11 @@ span.dash_divider {
 #dash_pickup { color: #1dd93c; }
 #dash_fines { color: #f41d36; }
 #header-wrap {
-	background: linear-gradient(#780032, #252525);    
-    background: -moz-linear-gradient(#780032, #252525);
-    background: -o-linear-gradient(#780032, #252525);
-    background: -webkit-linear-gradient(#780032, #252525);
-    background-color: #780032;
+	background: linear-gradient(#990033, #252525);    
+    background: -moz-linear-gradient(#990033, #252525);
+    background: -o-linear-gradient(#990033, #252525);
+    background: -webkit-linear-gradient(#990033, #252525);
+    background-color: #990033;
 }
 #header {
 	color: #fff;
