@@ -108,12 +108,12 @@ sub load_myopac_prefs {
     my $user = $self->ctx->{user};
 
     my $lock_usernames = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.lock_usernames');
-    if($lock_usernames == 1) {
+    if(defined($lock_usernames) and $lock_usernames == 1) {
         # Policy says no username changes
         $self->ctx->{username_change_disallowed} = 1;
     } else {
         my $username_unlimit = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.unlimit_usernames');
-        if($username_unlimit != 1) {
+        if(!$username_unlimit) {
             my $regex_check = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.barcode_regex');
             if(!$regex_check) {
                 # Default is "starts with a number"
@@ -852,7 +852,15 @@ sub attempt_hold_placement {
     }
 
     my $method = 'open-ils.circ.holds.test_and_create.batch';
-    $method .= '.override' if $cgi->param('override');
+
+    if ($cgi->param('override')) {
+        $method .= '.override';
+
+    } elsif (!$ctx->{is_staff})  {
+
+        $method .= '.override' if $self->ctx->{get_org_setting}->(
+            $e->requestor->home_ou, "opac.patron.auto_overide_hold_events");
+    }
 
     my @create_targets = map {$_->{target_id}} (grep { !$_->{hold_failed} } @hold_data);
 
@@ -1482,14 +1490,14 @@ sub load_myopac_update_username {
     my $allow_change = 1;
     my $regex_check;
     my $lock_usernames = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.lock_usernames');
-    if($lock_usernames == 1) {
+    if(defined($lock_usernames) and $lock_usernames == 1) {
         # Policy says no username changes
         $allow_change = 0;
     } else {
         # We want this further down.
         $regex_check = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.barcode_regex');
         my $username_unlimit = $self->ctx->{get_org_setting}->($e->requestor->home_ou, 'opac.unlimit_usernames');
-        if($username_unlimit != 1) {
+        if(!$username_unlimit) {
             if(!$regex_check) {
                 # Default is "starts with a number"
                 $regex_check = '^\d+';
@@ -1641,22 +1649,22 @@ sub load_myopac_bookbags {
     # If the user wants a specific bookbag's items, load them.
     # XXX add bookbag item paging support
 
-    if ($self->cgi->param("id")) {
+    if ($self->cgi->param("bbid")) {
         my ($bookbag) =
-            grep { $_->id eq $self->cgi->param("id") } @{$ctx->{bookbags}};
+            grep { $_->id eq $self->cgi->param("bbid") } @{$ctx->{bookbags}};
 
         if (!$bookbag) {
             $e->rollback;
             return Apache2::Const::HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        if ($self->cgi->param("action") eq "editmeta") {
+        if ( ($self->cgi->param("action") || '') eq "editmeta") {
             if (!$self->_update_bookbag_metadata($bookbag))  {
                 $e->rollback;
                 return Apache2::Const::HTTP_INTERNAL_SERVER_ERROR;
             } else {
                 $e->commit;
-                my $url = $self->ctx->{opac_root} . '/myopac/lists?id=' .
+                my $url = $self->ctx->{opac_root} . '/myopac/lists?bbid=' .
                     $bookbag->id;
 
                 foreach my $param (('loc', 'qtype', 'query', 'sort')) {
@@ -1813,7 +1821,7 @@ sub load_myopac_bookbag_update {
         }
     } elsif ($action eq 'save_notes') {
         $success = $self->update_bookbag_item_notes;
-        $url .= "&id=" . uri_escape($cgi->param("id")) if $cgi->param("id");
+        $url .= "&bbid=" . uri_escape($cgi->param("bbid")) if $cgi->param("bbid");
     }
 
     return $self->generic_redirect($url) if $success;

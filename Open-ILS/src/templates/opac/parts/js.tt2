@@ -77,4 +77,6 @@
 </script>
 [% END; # use_autosuggest %]
 
+[% INCLUDE "opac/parts/acjs.tt2" IF ctx.page == 'record' %]
+
 [%- END; # want_dojo -%]
