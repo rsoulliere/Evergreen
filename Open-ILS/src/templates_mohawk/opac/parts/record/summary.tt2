@@ -110,6 +110,24 @@ IF num_uris > 0;
 </div>
 [%- END %]
 
+[%- IF attrs.reserves_course_name %]
+<h2 id='rdetail_reserves_details_header'>[% l("Item on reserve") %]</h2>
+<ul>
+    <li id='rdetail_reserves_details'>
+        <strong class='rdetail_label'>[% l("Professor:") %]</strong>
+        <span class='rdetail_value'>[% attrs.reserves_professor | html %]</span>
+    </li>
+
+    <li id='rdetail_reserves_details'>
+        <strong class='rdetail_label'>[% l("Course:") %]</strong>
+        <span class='rdetail_value'>[% attrs.reserves_course_name | html %]</span>,
+        <span class='rdetail_value'>[% attrs.reserves_course_id | html %]</span>
+    </li>
+</ul>
+    [%- END %]
+
+
+
 <h2 id='rdetail_record_details'>[% l("Record details") %]</h2>
 <ul>
     [%- IF attrs.isbns.0; FOR isbn IN attrs.isbns %]
@@ -147,6 +165,12 @@ IF num_uris > 0;
         [% IF attrs.pubdate; %]
         <span itemprop="datePublished">[% attrs.pubdate | html; %]</span>
         [% END; %]
+    </li>
+    [%- END %]
+   [%- IF attrs.abstract %]
+    <li id='rdetail_abstract'>
+        <strong class='rdetail_label'>[% l("Abstract:") %]</strong>
+        <span class='rdetail_value'>[% attrs.abstract | html %]</span>
     </li>
     [%- END %]
 </ul>

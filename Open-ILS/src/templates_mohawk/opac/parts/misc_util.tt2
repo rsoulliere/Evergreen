@@ -38,7 +38,11 @@
 
         args.publisher = xml.findnodes('//*[@tag="260"]/*[@code="b"]').textContent;
         args.pubdate = xml.findnodes('//*[@tag="260"]/*[@code="c"]').textContent;
-        args.summary = xml.findnodes('//*[@tag="520"]/*[@code="a"]').textContent;
+        args.abstract = xml.findnodes('//*[@tag="520"]/*[@code="a"]').textContent;
+        args.reserves_professor = xml.findnodes('//*[@tag="506"]/*[@code="e"]').textContent;
+        args.reserves_course_name = xml.findnodes('//*[@tag="506"]/*[@code="b"]').textContent;
+        args.reserves_course_id = xml.findnodes('//*[@tag="506"]/*[@code="d"]').textContent;
+	 args.summary = xml.findnodes('//*[@tag="520"]/*[@code="a"]').textContent;
         args.edition = xml.findnodes('//*[@tag="250"]/*[@code="a"]').textContent ||
             xml.findnodes('//*[@tag="534"]/*[@code="b"]').textContent ||
             xml.findnodes('//*[@tag="775"]/*[@code="b"]').textContent;
