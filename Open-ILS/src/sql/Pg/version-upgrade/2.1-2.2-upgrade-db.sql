@@ -1,7 +1,7 @@
---Upgrade Script for 2.1 to 2.2-alpha2
+--Upgrade Script for 2.1 to 2.2.0
 
 -- Don't require use of -vegversion=something
-\set eg_version '''2.2'''
+\set eg_version '''2.2.0'''
 
 -- DROP objects that might have existed from a prior run of 0526
 -- Yes this is ironic.
@@ -11,7 +11,7 @@ DROP FUNCTION IF EXISTS evergreen.upgrade_list_applied_deprecates(TEXT);
 DROP FUNCTION IF EXISTS evergreen.upgrade_list_applied_supersedes(TEXT);
 
 BEGIN;
-INSERT INTO config.upgrade_log (version) VALUES ('2.2-beta2');
+INSERT INTO config.upgrade_log (version) VALUES ('2.2.0');
 
 INSERT INTO config.upgrade_log (version) VALUES ('0526'); --miker
 
@@ -2730,7 +2730,7 @@ CREATE TABLE authority.control_set_bib_field (
 
 CREATE TABLE authority.thesaurus (
     code        TEXT    PRIMARY KEY,     -- MARC21 thesaurus code
-    control_set INT     NOT NULL REFERENCES authority.control_set (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    control_set INT     REFERENCES authority.control_set (id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     name        TEXT    NOT NULL UNIQUE, -- i18n
     description TEXT                     -- i18n
 );
@@ -12423,6 +12423,21 @@ INSERT INTO permission.perm_list ( id, code, description )
 SELECT evergreen.upgrade_deps_block_check('0716', :eg_version);
 
 SELECT SETVAL('config.coded_value_map_id_seq'::TEXT, (SELECT max(id) FROM config.coded_value_map));
+
+
+-- Evergreen DB patch 0717.data.safer-control-set-defaults.sql
+
+SELECT evergreen.upgrade_deps_block_check('0717', :eg_version);
+
+-- Allow un-mapped thesauri
+-- ALTER TABLE authority.thesaurus ALTER COLUMN control_set DROP NOT NULL;
+-- XXX The above line is now covered by changes to the
+-- "CREATE TABLE authority.thesaurus" statement further up.
+
+-- Don't tie "No attempt to code" to LoC
+UPDATE authority.thesaurus SET control_set = NULL WHERE code = '|';
+UPDATE authority.record_entry SET control_set = NULL WHERE id IN (SELECT record FROM authority.rec_descriptor WHERE thesaurus = '|');
+
 
 COMMIT;
 
