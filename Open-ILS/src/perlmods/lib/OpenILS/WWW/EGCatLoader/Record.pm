@@ -15,13 +15,16 @@ our $ac_types = ['toc',  'anotes', 'excerpt', 'summary', 'reviews'];
 #   record : bre object
 sub load_record {
     my $self = shift;
+    my %kwargs = @_;
     my $ctx = $self->ctx;
     $ctx->{page} = 'record';  
 
     $self->timelog("load_record() began");
 
-    my $rec_id = $ctx->{page_args}->[0]
-        or return Apache2::Const::HTTP_BAD_REQUEST;
+    my $rec_id = $ctx->{page_args}->[0];
+
+    return Apache2::Const::HTTP_BAD_REQUEST 
+        unless $rec_id and $rec_id =~ /^\d+$/;
 
     $self->added_content_stage1($rec_id);
     $self->timelog("past added content stage 1");
@@ -46,8 +49,14 @@ sub load_record {
     }
     $self->timelog("past staff saved searches");
 
-    $self->fetch_related_search_info($rec_id);
+    $self->fetch_related_search_info($rec_id) unless $kwargs{no_search};
     $self->timelog("past related search info");
+
+    # Check for user and load lists and prefs
+    if ($self->ctx->{user}) {
+        $self->_load_lists_and_settings;
+        $self->timelog("load user lists and settings");
+    }
 
     # run copy retrieval in parallel to bib retrieval
     # XXX unapi

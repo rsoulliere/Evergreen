@@ -224,7 +224,10 @@
                                                                 alt=""/><span class="result_place_hold">[% l('Place Hold') %]</span></a>
                                                         </div>
                                                         <div class="results_aux_utils result_util">
-                                                            [%  
+                                                            [%  IF ctx.user;
+                                                                INCLUDE "opac/parts/bookbag_actions.tt2";
+                                                            %]
+                                                            [%  ELSE;
                                                                 operation = ctx.mylist.grep(rec.id).size ? "delete" : "add";
                                                                 label = (operation == "add") ? l("Add to my list") : l("Remove from my list");
                                                                 href = mkurl(ctx.opac_root _ '/mylist/' _ operation, 
@@ -234,6 +237,7 @@
                                                                 <img src="[% ctx.media_prefix %]/images/clipboard.png" alt="" />
                                                                 [% label %]
                                                             </a>
+                                                            [% END %]
                                                         </div>
                                                         [% IF ENV.OILS_CONTENT_CAFE_USER %]
                                                         <div class="results_aux_utils result_util">

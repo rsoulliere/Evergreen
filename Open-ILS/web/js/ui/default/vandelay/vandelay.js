@@ -344,7 +344,7 @@ function runStartupCommands() {
     dojo.style('vl-nav-bar', 'visibility', 'visible');
     if(currentQueueId)
         return retrieveQueuedRecords(currentType, currentQueueId, handleRetrieveRecords);
-    if (cgi.param('page', 'inspectq'))
+    if (cgi.param('page') == 'inspectq')
         return vlShowQueueSelect();
         
     vlShowUploadForm();
@@ -375,10 +375,18 @@ function uploadMARC(onload){
 function createQueue(queueName, type, onload, importDefId, matchSet) {
     var name = (type=='bib') ? 'bib' : 'authority';
     var method = 'open-ils.vandelay.'+ name +'_queue.create'
+
+    var qType = name;
+    if (vlUploadRecordType.getValue().match(/acq/)) 
+        var qType = 'acq';
+
+    console.log('record type ' + vlUploadRecordType.getValue());
+    console.log('record type ' + vlUploadRecordType.getValue());
+
     fieldmapper.standardRequest(
         ['open-ils.vandelay', method],
         {   async: true,
-            params: [authtoken, queueName, null, name, matchSet, importDefId],
+            params: [authtoken, queueName, null, qType, matchSet, importDefId],
             oncomplete : function(r) {
                 var queue = r.recv().content();
                 if(e = openils.Event.parse(queue)) 
@@ -1313,6 +1321,9 @@ function batchUpload() {
     var queueName = dijit.byId('vl-queue-name').getValue();
     currentType = dijit.byId('vl-record-type').getValue();
 
+    // could be bib-acq, which makes no sense in most places
+    if (currentType.match(/bib/)) currentType = 'bib';
+
     var handleProcessSpool = function() {
         if( 
             vlUploadQueueImportNoMatch.checked || 
@@ -1520,8 +1531,7 @@ function vlOpenMarcEditWindow(rec, postReloadHTMLHandler) {
         To run in Firefox directly, must set signed.applets.codebase_principal_support
         to true in about:config
     */
-    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-    win = window.open('/xul/server/cat/marcedit.xul'); // XXX version?
+    win = window.open('/xul/server/cat/marcedit.xul','','chrome'); // XXX version?
 
     var type;
     if (currentType == 'bib') {

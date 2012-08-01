@@ -210,6 +210,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Public Note" name="pub_note" reporter:datatype="text"/>
 			<field reporter:label="Private Note" name="priv_note" reporter:datatype="text"/>
 			<field reporter:label="OPAC Visible" name="opac_visible" reporter:datatype="bool"/>
+			<field reporter:label="Overlay Match ID" name="internal_id" reporter:datatype="int"/>
 		</fields>
 		<links>
 			<link field="import_error" reltype="has_a" key="code" map="" class="vie"/>
@@ -261,6 +262,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Private Note" name="priv_note" reporter:datatype="text"/>
 			<field reporter:label="OPAC Visible" name="opac_visible" reporter:datatype="text"/>
 			<field reporter:label="Copy Number" name="copy_number" reporter:datatype="text"/>
+			<field reporter:label="Overlay Match ID" name="internal_id" reporter:datatype="text"/>
 		</fields>
 		<links>
 			<link field="owner" reltype="has_a" key="id" map="" class="aou"/>
@@ -1101,6 +1103,84 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 		</permacrud>
 	</class>
 
+	<class id="atul" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="action_trigger::user_log" reporter:label="Action Trigger User Log" oils_persist:readonly="true">
+		<oils_persist:source_definition><![CDATA[
+		SELECT	atevdef.hook,
+			atevdef.name,
+			atevdef.reactor,
+			atev.id,
+			atev.event_def,
+			atev.add_time,
+			atev.run_time,
+			atev.start_time,
+			atev.update_time,
+			atev.complete_time,
+			atev.update_process,
+			atev.state,
+			atev.user_data,
+			atev.template_output,
+			atev.error_output,
+			atev.async_output,
+			targ_circ.id AS target_circ,
+			targ_ahr.id AS target_hold,
+			COALESCE(
+				targ_circ.circ_lib,
+				targ_ahr.pickup_lib
+			) AS perm_lib
+		FROM action_trigger.event atev
+		JOIN action_trigger.event_definition atevdef ON
+			(atevdef.id = atev.event_def)
+		JOIN action_trigger.hook ath ON
+			(ath.key = atevdef.hook)
+		LEFT JOIN action.circulation targ_circ ON
+			(ath.core_type = 'circ' AND targ_circ.id = atev.target)
+		LEFT JOIN action.hold_request targ_ahr ON
+			(ath.core_type = 'ahr' AND targ_ahr.id = atev.target)
+		WHERE atev.add_time > NOW() - (SELECT MAX(value) FROM (
+			SELECT value::INTERVAL FROM actor.org_unit_ancestor_setting(
+				'circ.staff.max_visible_event_age',
+				COALESCE(targ_circ.circ_lib, targ_ahr.pickup_lib)
+			) UNION
+			SELECT '1000 YEARS'::INTERVAL AS value
+		) ous)
+		]]></oils_persist:source_definition>
+		<fields oils_persist:primary="id">
+			<field reporter:label="Hook" name="hook" reporter:datatype="link" />
+			<field reporter:label="Name" name="name" reporter:datatype="text" />
+			<field reporter:label="Reactor" name="reactor" reporter:datatype="text" />
+			<field reporter:label="Event ID" name="id" reporter:datatype="id" />
+			<field reporter:label="Event Definition ID" name="event_def" reporter:datatype="int" />
+			<field reporter:label="Event Add Time" name="add_time" reporter:datatype="timestamp" />
+			<field reporter:label="Event Run Time" name="run_time" reporter:datatype="timestamp" />
+			<field reporter:label="Event Start Time" name="start_time" reporter:datatype="timestamp" />
+			<field reporter:label="Event Update Time" name="update_time" reporter:datatype="timestamp" />
+			<field reporter:label="Event Complete Time" name="complete_time" reporter:datatype="timestamp" />
+			<field reporter:label="Event Update PID" name="update_process" reporter:datatype="int" />
+			<field reporter:label="Event State" name="state" reporter:datatype="text" />
+			<field reporter:label="Event User Data" name="user_data" reporter:datatype="text" />
+			<field reporter:label="Event Template Output" name="template_output" reporter:datatype="link" />
+			<field reporter:label="Event Error Output" name="error_output" reporter:datatype="link" />
+			<field reporter:label="Event Async Output" name="async_output" reporter:datatype="link" />
+			<field reporter:label="Target Circulation" name="target_circ" reporter:datatype="link" />
+			<field reporter:label="Target Hold" name="target_hold" reporter:datatype="link" />
+			<field reporter:label="Permission Context" name="perm_lib" reporter:datatype="org_unit" />
+		</fields>
+		<links>
+			<link field="hook" reltype="has_a" key="key" map="" class="ath" />
+			<link field="template_output" reltype="has_a" key="id" map="" class="ateo" />
+			<link field="error_output" reltype="has_a" key="id" map="" class="ateo" />
+			<link field="async_output" reltype="has_a" key="id" map="" class="ateo" />
+			<link field="target_circ" reltype="has_a" key="id" map="" class="circ" />
+			<link field="target_hold" reltype="has_a" key="id" map="" class="ahr" />
+			<link field="perm_lib" reltype="has_a" key="id" map="" class="aou" />
+		</links>
+		<permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
+			<actions>
+				<retrieve permission="VIEW_TRIGGER_EVENT" context_field="perm_lib" />
+			</actions>
+		</permacrud>
+	</class>
+
 	<class id="aws" controller="open-ils.cstore" oils_obj:fieldmapper="actor::workstation" oils_persist:tablename="actor.workstation" reporter:label="Workstation">
 		<fields oils_persist:primary="id" oils_persist:sequence="actor.workstation_id_seq">
 			<field reporter:label="Workstation ID" name="id" reporter:datatype="id"/>
@@ -1335,6 +1415,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
             <field reporter:label="User Home Lib" name="user_home_ou" reporter:datatype="float"/>
             <field reporter:label="Permission Group" name="grp" reporter:datatype="float"/>
             <field reporter:label="Circulation Modifier" name="circ_modifier" reporter:datatype="float"/>
+            <field reporter:label="Copy Location" name="copy_location" reporter:datatype="float"/>
             <field reporter:label="MARC Type" name="marc_type" reporter:datatype="float"/>
             <field reporter:label="MARC Form" name="marc_form" reporter:datatype="float"/>
             <field reporter:label="MARC Bib Level" name="marc_bib_level" reporter:datatype="float"/>
@@ -1442,6 +1523,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="User Home Lib" name="user_home_ou" reporter:datatype="org_unit"/>
 			<field reporter:label="Permission Group" name="grp" reporter:datatype="link" oils_obj:required="true"/>
 			<field reporter:label="Circulation Modifier" name="circ_modifier" oils_persist:primitive="string" reporter:datatype="link"/>
+			<field reporter:label="Copy Location" name="copy_location" reporter:datatype="link"/>
 			<field reporter:label="MARC Type" name="marc_type" oils_persist:primitive="string" reporter:datatype="link"/>
 			<field reporter:label="MARC Form" name="marc_form" oils_persist:primitive="string" reporter:datatype="link"/>
 			<field reporter:label="MARC Bib Level" name="marc_bib_level" oils_persist:primitive="string" reporter:datatype="link"/>
@@ -1469,6 +1551,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<link field="user_home_ou" reltype="has_a" key="id" map="" class="aou"/>
 			<link field="grp" reltype="has_a" key="id" map="" class="pgt"/>
 			<link field="circ_modifier" reltype="has_a" key="code" map="" class="ccm"/>
+			<link field="copy_location" reltype="has_a" key="id" map="" class="acpl"/>
 			<link field="marc_type" reltype="has_a" key="code" map="" class="citm"/>
 			<link field="marc_form" reltype="has_a" key="code" map="" class="cifm"/>
 			<link field="marc_bib_level" reltype="has_a" key="code" map="" class="cblvl"/>
@@ -1565,6 +1648,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
         <links>
             <link field="limit_set" reltype="has_a" key="id" map="" class="ccls"/>
             <link field="circ_mod" reltype="has_a" key="code" map="" class="ccm"/>
+        </links>
+        <permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
+            <actions>
+                <create permission="ADMIN_CIRC_MATRIX_MATCHPOINT">
+                    <context link="limit_set" field="owning_lib"/>
+                </create>
+                <retrieve/>
+                <update permission="ADMIN_CIRC_MATRIX_MATCHPOINT">
+                    <context link="limit_set" field="owning_lib"/>
+                </update>
+                <delete permission="ADMIN_CIRC_MATRIX_MATCHPOINT">
+                    <context link="limit_set" field="owning_lib"/>
+                </delete>
+            </actions>
+        </permacrud>
+    </class>
+    <class id="cclsacpl" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="config::circ_limit_set_copy_loc_map" oils_persist:tablename="config.circ_limit_set_copy_loc_map" reporter:label="Circulation Limit Set Copy Location Map">
+        <fields oils_persist:primary="id" oils_persist:sequence="config.circ_limit_set_copy_loc_map_id_seq">
+            <field reporter:label="ID" name="id" reporter:datatype="id"/>
+            <field reporter:label="Limit Set" name="limit_set" reporter:datatype="link"/>
+            <field reporter:label="Copy Location" name="copy_loc" reporter:datatype="link"/>
+        </fields>
+        <links>
+            <link field="limit_set" reltype="has_a" key="id" map="" class="ccls"/>
+            <link field="copy_loc" reltype="has_a" key="id" map="" class="acpl"/>
         </links>
         <permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
             <actions>
@@ -2699,11 +2807,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 			<field reporter:label="Other Phone" name="other_phone"  reporter:datatype="text"/>
 			<field reporter:label="Password" name="passwd"  reporter:datatype="text"/>
 			<field reporter:label="Photo URL" name="photo_url"  reporter:datatype="text"/>
-			<field reporter:label="Prefix" name="prefix"  reporter:datatype="text"/>
+			<field reporter:label="Prefix/Title" name="prefix"  reporter:datatype="text"/>
 			<field reporter:label="Main (Profile) Permission Group" name="profile" reporter:datatype="link"/>
 			<field reporter:label="Middle Name" name="second_given_name"  reporter:datatype="text"/>
 			<field reporter:label="Standing (unused)" name="standing" reporter:datatype="link"/>
-			<field reporter:label="Suffix/Title" name="suffix"  reporter:datatype="text"/>
+			<field reporter:label="Suffix" name="suffix"  reporter:datatype="text"/>
 			<field reporter:label="Is Super User" name="super_user" reporter:datatype="bool"/>
 			<field reporter:label="Family Linkage or other Group" name="usrgroup" reporter:datatype="int"/>
 			<field reporter:label="OPAC/Staff Client User Name" name="usrname"  reporter:datatype="text"/>
@@ -3442,7 +3550,7 @@ SELECT  usr,
             <link field="usr" reltype="has_a" key="id" map="" class="au"/>
         </links>
 	</class>
-	<class id="circ" controller="open-ils.cstore" oils_obj:fieldmapper="action::circulation" oils_persist:tablename="action.circulation" reporter:core="true" reporter:label="Circulation">
+	<class id="circ" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="action::circulation" oils_persist:tablename="action.circulation" reporter:core="true" reporter:label="Circulation">
 		<fields oils_persist:primary="id" oils_persist:sequence="money.billable_xact_id_seq">
 			<field reporter:label="Check In Library" name="checkin_lib" reporter:datatype="org_unit"/>
 			<field reporter:label="Check In Staff" name="checkin_staff" reporter:datatype="link"/>
@@ -3509,6 +3617,11 @@ SELECT  usr,
 			<link field="aaactsc_entries" reltype="has_many" key="xact" map="" class="aaactsc"/>
 			<link field="aaasc_entries" reltype="has_many" key="xact" map="" class="aaasc"/>
 		</links>
+		<permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
+			<actions>
+				<retrieve permission="VIEW_CIRCULATIONS" context_field="circ_lib" />
+			</actions>
+		</permacrud>
 	</class>
 	<class id="combcirc" controller="open-ils.cstore" oils_obj:fieldmapper="action::all_circulation" oils_persist:tablename="action.all_circulation" reporter:core="true" reporter:label="Combined Aged and Active Circulations" oils_persist:readonly="true">
 		<fields oils_persist:primary="id" oils_persist:sequence="money.billable_xact_id_seq">
@@ -4847,7 +4960,7 @@ SELECT  usr,
 	</class>
 
 	<!-- A note: Please update alhr and ahopl when updating ahr -->
-	<class id="ahr" controller="open-ils.cstore" oils_obj:fieldmapper="action::hold_request" oils_persist:tablename="action.hold_request" reporter:core="true" reporter:label="Hold Request">
+	<class id="ahr" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="action::hold_request" oils_persist:tablename="action.hold_request" reporter:core="true" reporter:label="Hold Request">
 		<fields oils_persist:primary="id" oils_persist:sequence="action.hold_request_id_seq">
 			<field reporter:label="Status" name="status" oils_persist:virtual="true" />
 			<field reporter:label="Transit" name="transit" oils_persist:virtual="true" />
@@ -4908,6 +5021,11 @@ SELECT  usr,
 			<link field="current_shelf_lib" reltype="has_a" key="id" map="" class="aou"/>
 			<link field="sms_carrier" reltype="has_a" key="id" map="" class="csc"/>
 		</links>
+		<permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
+			<actions>
+				<retrieve permission="VIEW_HOLD" context_field="pickup_lib" />
+			</actions>
+		</permacrud>
 	</class>
 	<class id="ahopl" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="action::hold_on_pull_list" reporter:label="Hold On Pull List" oils_persist:readonly="true">
 		<oils_persist:source_definition><![CDATA[
@@ -4937,6 +5055,18 @@ SELECT  usr,
 		JOIN asset.call_number_prefix acnp ON (acn.prefix = acnp.id)
 		JOIN asset.call_number_suffix acns ON (acn.suffix = acns.id)
 		JOIN actor.usr au ON (au.id = ahr.usr)
+		LEFT JOIN actor.usr_standing_penalty ausp 
+			ON (ahr.usr = ausp.usr AND (ausp.stop_date IS NULL OR ausp.stop_date > NOW()))
+		LEFT JOIN config.standing_penalty csp
+			ON (
+				csp.id = ausp.standing_penalty AND 
+				csp.block_list LIKE '%CAPTURE%' AND (
+					(csp.org_depth IS NULL AND ahr.pickup_lib = ausp.org_unit) OR
+					(csp.org_depth IS NOT NULL AND ahr.pickup_lib IN (
+						SELECT id FROM actor.org_unit_descendants(ausp.org_unit, csp.org_depth))
+					)
+				)
+			)
 		LEFT JOIN serial.issuance siss
 			ON (ahr.hold_type = 'I' AND siss.id = ahr.target)
 		LEFT JOIN asset.copy_location_order acplo
@@ -4945,6 +5075,7 @@ SELECT  usr,
 		WHERE
 			ahr.capture_time IS NULL AND
 			ahr.cancel_time IS NULL AND
+			csp.id IS NULL AND
 			(ahr.expire_time is NULL OR ahr.expire_time > NOW())
 		]]></oils_persist:source_definition>
 		<fields oils_persist:primary="id">
@@ -5167,10 +5298,7 @@ SELECT  usr,
         <permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
             <actions>
                 <create permission="CREATE_ORG_UNIT" context_field="parent_ou"/>
-                <retrieve permission="CREATE_ORG_UNIT UPDATE_ORG_UNIT DELETE_ORG_UNIT">
-                    <context field="id"/>
-                    <context field="parent_ou"/>
-				</retrieve>
+                <retrieve />
                 <update permission="UPDATE_ORG_UNIT" context_field="id"/>
                 <delete permission="DELETE_ORG_UNIT" context_field="parent_ou"/>
             </actions>
@@ -7253,7 +7381,51 @@ SELECT  usr,
             </actions>
         </permacrud>
     </class>
+    <class id="acqfsum" controller="open-ils.cstore open-ils.pcrud open-ils.reporter-store" oils_obj:fieldmapper="acq::fund_summary" reporter:label="Fund Summary" reporter:core="true" oils_persist:readonly="true">
+        <oils_persist:source_definition><![CDATA[
+            SELECT
+                acqf.*,
+                COALESCE(acqfat.amount, 0.00) AS allocated_total,
+                COALESCE(acqfst.amount, 0.00) AS spent_total,
+                COALESCE(acqfet.amount, 0.00) AS encumbrance_total,
+                COALESCE(acqfcb.amount, 0.00) AS combined_balance
+            FROM
+                acq.fund acqf
+                LEFT JOIN acq.fund_allocation_total acqfat ON (acqfat.fund = acqf.id)
+                LEFT JOIN acq.fund_spent_total acqfst ON (acqfst.fund = acqf.id)
+                LEFT JOIN acq.fund_encumbrance_total acqfet ON (acqfet.fund = acqf.id)
+                LEFT JOIN acq.fund_combined_balance acqfcb ON (acqfcb.fund = acqf.id)
+        ]]></oils_persist:source_definition>
+        <fields oils_persist:primary="id" oils_persist:sequence="acq.fund_id_seq">
+            <field reporter:label="Fund ID" name="id" reporter:datatype="id" reporter:selector='code'/>
+            <field reporter:label="Org Unit" name="org" reporter:datatype="org_unit" />
+            <field reporter:label="Name" name="name" reporter:datatype="text" />
+            <field reporter:label="Year" name="year" reporter:datatype="int" />
+            <field reporter:label="Currency Type" name="currency_type" reporter:datatype="link" />
+            <field reporter:label="Code" name="code" reporter:datatype="text" />
+            <field reporter:label="Rollover" name="rollover" reporter:datatype="bool" />
+            <field reporter:label="Propagate" name="propagate" reporter:datatype="bool" />
+            <field reporter:label="Active" name="active" reporter:datatype="bool" />
+            <field reporter:label="Balance Warning Percent" name="balance_warning_percent" reporter:datatype="int" />
+            <field reporter:label="Balance Stop Percent" name="balance_stop_percent" reporter:datatype="int" />
 
+            <!-- non fund-native fields -->
+            <field reporter:label="Total Allocated" name="allocated_total" reporter:datatype="money"/>
+            <field reporter:label="Total Spent" name="spent_total" reporter:datatype="money"/>
+            <field reporter:label="Total Encumbered" name="encumbrance_total" reporter:datatype="money"/>
+            <field reporter:label="Remaining Balance" name="combined_balance" reporter:datatype="money"/>
+        </fields>
+        <links>
+            <link field="id" reltype="has_a" key="id" map="" class="acqf"/>
+            <link field="org" reltype="has_a" key="id" map="" class="aou"/>
+            <link field="currency_type" reltype="has_a" key="code" map="" class="acqct"/>
+        </links>
+        <permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
+            <actions>
+                <retrieve permission="ADMIN_ACQ_FUND VIEW_FUND MANAGE_FUND" context_field="org"/>
+            </actions>
+        </permacrud>
+	</class>
 	<class id="acqfa" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="acq::fund_allocation" oils_persist:tablename="acq.fund_allocation" reporter:label="Fund Allocation">
 		<fields oils_persist:primary="id" oils_persist:sequence="acq.fund_allocation_id_seq">
 			<field reporter:label="Allocation ID" name="id" reporter:datatype="id" />

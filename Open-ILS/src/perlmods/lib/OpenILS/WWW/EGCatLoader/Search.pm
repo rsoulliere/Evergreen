@@ -25,6 +25,12 @@ sub _prepare_biblio_search_basics {
 
         next unless $query =~ /\S/;
 
+        # Hack for journal title
+        my $q = $qtype;
+        if ($q eq 'jtitle') {
+            $qtype = 'title';
+        }
+
         # This stuff probably will need refined or rethought to better handle
         # the weird things Real Users will surely type in.
         $contains = "" unless defined $contains; # silence warning
@@ -41,6 +47,11 @@ sub _prepare_biblio_search_basics {
         }
         $query = "$qtype:$query" unless $qtype eq 'keyword' and $i == 0;
 
+        # Hack for journal title - completed!
+        if ($q eq 'jtitle') {
+            $query = "bib_level:s $query";
+        }
+
         $bool = ($bool and $bool eq 'or') ? '||' : '&&';
         $full_query = $full_query ? "($full_query $bool $query)" : $query;
     }
@@ -52,6 +63,8 @@ sub _prepare_biblio_search {
     my ($cgi, $ctx) = @_;
 
     my $query = _prepare_biblio_search_basics($cgi) || '';
+
+    $query .= ' ' . $ctx->{global_search_filter} if $ctx->{global_search_filter};
 
     foreach ($cgi->param('modifier')) {
         # The unless bit is to avoid stacking modifiers.
@@ -447,6 +460,9 @@ sub load_rresults {
         return $stat if $stat;
     }
 
+    # load temporary_list settings for user and ou:
+    $self->_load_lists_and_settings if ($ctx->{user});
+
     # shove recs into context in search results order
     for my $rec_id (@$rec_ids) {
         push(
@@ -616,10 +632,12 @@ sub marc_expert_search {
     }
 
     $self->timelog("Searching for MARC expert");
+    my $method = 'open-ils.search.biblio.marc';
+    $method .= '.staff' if $self->ctx->{is_staff};
     my $timeout = 120;
     my $ses = OpenSRF::AppSession->create('open-ils.search');
     my $req = $ses->request(
-        'open-ils.search.biblio.marc',
+        $method,
         {searches => $query, org_unit => $self->ctx->{search_ou}}, 
         $limit, $offset, $timeout);
 

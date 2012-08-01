@@ -63,11 +63,11 @@
         FOR sub IN xml.findnodes('//*[@tag="520"]/*[@code="a"]');
             args.summaries.push(sub.textContent);
         END;
-        args.summary = (args.summary.size) ? args.summary.0 : '';
+        args.summary = (args.summaries.size) ? args.summaries.0 : '';
 
         args.editions = [];
-        ed_hunt = xml.findnodes('//*[@tag="250"]/*[@code="a"]') &&
-            xml.findnodes('//*[@tag="534"]/*[@code="b"]') &&
+        ed_hunt = xml.findnodes('//*[@tag="250"]/*[@code="a"]') ||
+            xml.findnodes('//*[@tag="534"]/*[@code="b"]') ||
             xml.findnodes('//*[@tag="775"]/*[@code="b"]');
         FOR sub IN ed_hunt;
             args.editions.push(sub.textContent);
@@ -80,7 +80,7 @@
         );
             phys_content.push(sub.textContent);
         END;
-        args.phys_desc = phys_content.join("");
+        args.phys_desc = phys_content.join(" ");
 
         args.contents_list = [];
         FOR sub IN xml.findnodes('//*[@tag="505"]');

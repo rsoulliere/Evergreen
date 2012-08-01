@@ -240,6 +240,7 @@ include::serials/G-Special_issue.txt[]
 
 include::serials/H-holdings_statements.txt[]
 
+include::serials/Group_Serials_Issues_in_the_OPAC_2.2.txt[]
 
 Circulation
 ===========
@@ -254,6 +255,8 @@ include::circulation/circulating_items.txt[]
 
 include::circulation/booking.txt[]
 
+include::circulation/circulation_patron_records.txt[]
+
 Reports
 =======
 
@@ -261,6 +264,26 @@ Introduction
 ------------
 
 Learn how to create and use reports in Evergreen. 
+
+include::reports/reporter_daemon.txt[]
+
+include::reports/reporter_folder.txt[]
+
+include::reports/reporter_create_templates.txt[]
+
+include::reports/reporter_generating_reports.txt[]
+
+include::reports/reporter_view_output.txt[]
+
+include::reports/reporter_cloning_shared_templates.txt[]
+
+include::reports/reporter_add_data_source.txt[]
+
+include::reports/running_recurring_reports.txt[]
+
+include::reports/reporter_template_termionology.txt[]
+
+include::reports/reporter_export_usingpgAdmin.txt[]
 
 Using the Public Access Catalog
 ===============================
@@ -289,17 +312,13 @@ include::development/updating_translations_launchpad.txt[]
 // Return to normal title levels.
 :leveloffset: 0
 
-[appendix]
-
 include::attributions.txt[]
 
 include::licensing.txt[]
 
+[appendix]
 Admonitions
 ===========
-
-Images used for Admonitions
----------------------------
 
 * Note 
 
@@ -317,4 +336,7 @@ image::media/caution.png[]
 
 image::media/tip.png[]
 
+[index]
+Index
+=====
 

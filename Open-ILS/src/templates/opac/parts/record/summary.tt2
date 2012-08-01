@@ -30,7 +30,10 @@
             class="place_hold">[% l('Place Hold') %]</span></a>
         </div>
         <div class="rdetail_aux_utils toggle_list">
-        [%-  
+        [%  IF ctx.user;
+            INCLUDE "opac/parts/bookbag_actions.tt2";
+        %]
+        [%  ELSE;
             operation = ctx.mylist.grep(ctx.bre_id).size ? "delete" : "add";
             label = (operation == "add") ? l("Add to my list") : l("Remove from my list"); 
         %]
@@ -38,6 +41,7 @@
                 <img src="[% ctx.media_prefix %]/images/clipboard.png" alt="" />
                 [% label %]
             </a>
+        [% END %]
         </div>
         <div class="rdetail_aux_utils">
             <img src="[% ctx.media_prefix %]/images/clipboard.png" alt="" />

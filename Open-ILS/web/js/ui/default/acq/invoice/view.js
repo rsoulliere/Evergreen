@@ -35,6 +35,7 @@ var virtualId = -1;
 var extraCopies = {};
 var extraCopiesFund;
 var widgetRegistry = {acqie : {}, acqii : {}};
+var focusLineitem;
 
 function nodeByName(name, context) {
     return dojo.query('[name='+name+']', context)[0];
@@ -42,8 +43,15 @@ function nodeByName(name, context) {
 
 function init() {
 
-    attachLi = cgi.param('attach_li');
-    attachPo = cgi.param('attach_po');
+    attachLi = cgi.param('attach_li') || [];
+    if (!dojo.isArray(attachLi)) 
+        attachLi = [attachLi];
+
+    attachPo = cgi.param('attach_po') || [];
+    if (!dojo.isArray(attachPo)) 
+        attachPo = [attachPo];
+
+    focusLineitem = new openils.CGI().param('focus_li');
 
     itemTypes = pcrud.retrieveAll('aiit');
 
@@ -78,7 +86,7 @@ function init() {
 function renderInvoice() {
 
     // in create mode, let the LI or PO render the invoice with seed data
-    if( !(cgi.param('create') && (attachPo || attachLi)) ) {
+    if( !(cgi.param('create') && (attachPo.length || attachLi.length)) ) {
         invoicePane = drawInvoicePane(dojo.byId('acq-view-invoice-div'), invoice);
     }
 
@@ -125,8 +133,8 @@ function renderInvoice() {
         );
     }
 
-    if(attachLi) doAttachLi();
-    if(attachPo) doAttachPo();
+    if(attachLi.length) doAttachLi();
+    if(attachPo.length) doAttachPo(0);
 }
 
 function doAttachLi() {
@@ -134,10 +142,11 @@ function doAttachLi() {
     //var invoiceArgs = {provider : lineitem.provider(), shipper : lineitem.provider()}; 
     if(cgi.param('create')) {
 
+        // use the first LI in the list to determine the default provider
         fieldmapper.standardRequest(
             ['open-ils.acq', 'open-ils.acq.lineitem.retrieve.authoritative'],
             {
-                params : [openils.User.authtoken, attachLi, {clear_marc:1}],
+                params : [openils.User.authtoken, attachLi[0], {clear_marc:1}],
                 oncomplete : function(r) {
                     var li = openils.Util.readResponse(r);
                     invoicePane = drawInvoicePane(
@@ -149,27 +158,34 @@ function doAttachLi() {
         );
     }
 
-    var entry = new fieldmapper.acqie();
-    entry.id(virtualId--);
-    entry.isnew(true);
-    entry.lineitem(attachLi);
-    addInvoiceEntry(entry);
+    dojo.forEach(attachLi,
+        function(li) {
+            var entry = new fieldmapper.acqie();
+            entry.id(virtualId--);
+            entry.isnew(true);
+            entry.lineitem(li);
+            addInvoiceEntry(entry);
+        }
+    );
 }
 
-function doAttachPo() {
+function doAttachPo(idx) {
+
+    if (idx == attachPo.length) return;
+    var poId = attachPo[idx];
 
     fieldmapper.standardRequest(
         ['open-ils.acq', 'open-ils.acq.purchase_order.retrieve'],
         {   async: true,
             params: [
-                openils.User.authtoken, attachPo, 
+                openils.User.authtoken, poId,
                 {flesh_lineitem_ids : true, flesh_po_items : true}
             ],
             oncomplete: function(r) {
                 var po = openils.Util.readResponse(r);
 
-                if(cgi.param('create')) {
-                    // render the invoice using some seed data from the PO
+                if(cgi.param('create') && idx == 0) {
+                    // render the invoice using some seed data from the first PO
                     var invoiceArgs = {provider : po.provider(), shipper : po.provider()}; 
                     invoicePane = drawInvoicePane(dojo.byId('acq-view-invoice-div'), null, invoiceArgs);
                 }
@@ -200,6 +216,8 @@ function doAttachPo() {
                         addInvoiceItem(item);
                     }
                 );
+
+                doAttachPo(++idx);
             }
         }
     );
@@ -430,6 +448,39 @@ function updateReceiveLink(li) {
     link.onclick = function() { location.href =  oilsBasePath + '/acq/invoice/receive/' + invoiceId; };
 }
 
+/*
+ * Ensures focusLineitem is in view and causes a brief 
+ * border around the lineitem to come to life then fade.
+ */
+function focusLi() {
+    if (!focusLineitem) return;
+
+    // set during addLineitem()
+    var node = dojo.byId('li-title-ref-' + focusLineitem);
+
+    console.log('focus: li-title-ref-' + focusLineitem + ' : ' + node);
+
+    // LI may not yet be rendered
+    if (!node) return; 
+
+    console.log('focusing ' + focusLineitem);
+
+    // prevent numerous re-focuses
+    focusLineitem = null; 
+
+    // causes the full row to be visible
+    dijit.scrollIntoView(node);
+
+    dojo.require('dojox.fx');
+
+    setTimeout(
+        function() {
+            dojox.fx.highlight({color : '#BB4433', node : node, duration : 2000}).play();
+        }, 
+    100);
+}
+
+
 function addInvoiceEntry(entry) {
 
     openils.Util.removeCSSClass(dojo.byId('acq-invoice-entry-header'), 'hidden');
@@ -454,6 +505,9 @@ function addInvoiceEntry(entry) {
             entry.lineitem(li);
             entry.purchase_order(li.purchase_order());
             nodeByName('title_details', row).innerHTML = html;
+
+            nodeByName('title_details', row).parentNode.id = 'li-title-ref-' + li.id();
+            console.log(dojo.byId('li-title-ref-' + li.id()));
 
             updateReceiveLink(li);
 
@@ -499,6 +553,9 @@ function addInvoiceEntry(entry) {
                     );
                 }
             );
+
+            if (focusLineitem == li.id())
+                focusLi();
         }
     );
 
@@ -552,16 +609,45 @@ function saveChanges(doProrate, doClose, doReopen) {
     );
 }
 
+// Define a helper function to 'unflesh' sub-objects from an fmclass object.
+// 'this' specifies the object; the arguments specify a list of names of
+// sub-objects.
+function unflesh() {
+    var _, $ = this;
+    dojo.forEach(arguments, function (n) {
+        _ = $[n]();
+        if (_ !== null && typeof _ === 'object')
+            $[n]( _.id() );
+    });
+}
+
 function saveChangesPartTwo(doProrate, doClose, doReopen) {
     
-    progressDialog.show(true);
 
     if(doReopen) {
         invoice.complete('f');
 
     } else {
 
+        // Prepare an invoice for submission
+        if(!invoice) {
+            invoice = new fieldmapper.acqinv();
+            invoice.isnew(true);
+        } else {
+            invoice.ischanged(true); // for now, just always update
+        }
 
+        var e = invoicePane.mapValues(function (n, v) { invoice[n](v); });
+        if (e instanceof Error) {
+            alert(e.message);
+            return;
+        }
+
+        if(doClose)
+            invoice.complete('t');
+
+
+        // Prepare any charge items
         var updateItems = [];
         for(var id in widgetRegistry.acqii) {
             var reg = widgetRegistry.acqii[id];
@@ -574,19 +660,17 @@ function saveChangesPartTwo(doProrate, doClose, doReopen) {
                         item[field]( reg[field].getFormattedValue() );
                 }
                 
-                // unflesh
-                if(item.purchase_order() != null && typeof item.purchase_order() == 'object')
-                    item.purchase_order( item.purchase_order().id() );
+                unflesh.call(item, 'purchase_order');
+
             }
         }
 
+        // Prepare any line items
         var updateEntries = [];
         for(var id in widgetRegistry.acqie) {
             var reg = widgetRegistry.acqie[id];
             var entry = reg._object;
             if(entry.ischanged() || entry.isnew() || entry.isdeleted()) {
-                entry.lineitem(entry.lineitem().id());
-                entry.purchase_order(entry.purchase_order().id());
                 updateEntries.push(entry);
                 if(entry.isnew()) entry.id(null);
 
@@ -595,33 +679,12 @@ function saveChangesPartTwo(doProrate, doClose, doReopen) {
                         entry[field]( reg[field].getFormattedValue() );
                 }
                 
-                // unflesh
-                dojo.forEach(['purchase_order', 'lineitem'],
-                    function(field) {
-                        if(entry[field]() != null && typeof entry[field]() == 'object')
-                            entry[field]( entry[field]().id() );
-                    }
-                );
+                unflesh.call(entry, 'purchase_order', 'lineitem');
             }
         }
-
-        if(!invoice) {
-            invoice = new fieldmapper.acqinv();
-            invoice.isnew(true);
-        } else {
-            invoice.ischanged(true); // for now, just always update
-        }
-
-        dojo.forEach(invoicePane.fieldList, 
-            function(field) {
-                invoice[field.name]( field.widget.getFormattedValue() );
-            }
-        );
-
-        if(doClose) 
-            invoice.complete('t');
     }
 
+    progressDialog.show(true);
     fieldmapper.standardRequest(
         ['open-ils.acq', 'open-ils.acq.invoice.update'],
         {
