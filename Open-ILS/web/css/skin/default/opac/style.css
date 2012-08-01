@@ -33,6 +33,11 @@ a {
 	width: 12em;
 }
 
+.searchbar {
+    font-weight: bold;
+    padding-top: 10px;
+}
+
 /*
 #search-wrapper select {
 	border:0px solid black;
@@ -226,7 +231,7 @@ span.dash_divider {
 }
 
 .search_box_wrapper {
-	padding: 1px 1px 1px 3px;
+	padding: 10px 5px 5px 3px;
 }
 
 #search-wrapper #breadcrumb {
@@ -253,6 +258,8 @@ span.dash_divider {
 #search-wrapper #search-box {
 	margin-left: 1em;
 	padding-left: 0px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 #utils {
@@ -670,6 +677,13 @@ div.format_icon {
 	background: url('/images/login-box-bg.jpg') no-repeat;
 	width:167px;
 	height:29px;
+}
+
+#login-failed-message {
+	font-size: 125%;
+    font-weight: bold;
+	color: red;
+    padding-top: 1em;
 }
 
 #home-buttons-inner {
@@ -1430,4 +1444,17 @@ a.preflib_change {
     padding: 1em;
     margin: 1em;
     border: thick solid red;
+}
+
+#locale_picker_form {
+    float: right;
+    padding: 0.5em 1em 0.5em 0;
+    border-right: thin #69A088 solid;
+}
+
+#locale_picker_form * {
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    font-size: 1em;
 }
