@@ -33,6 +33,11 @@ a {
 	width: 12em;
 }
 
+.searchbar {
+    font-weight: bold;
+    padding-top: 10px;
+}
+
 /*
 #search-wrapper select {
 	border:0px solid black;
@@ -226,7 +231,7 @@ span.dash_divider {
 }
 
 .search_box_wrapper {
-	padding: 1px 1px 1px 3px;
+	padding: 10px 5px 5px 3px;
 }
 
 #search-wrapper #breadcrumb {
@@ -253,6 +258,8 @@ span.dash_divider {
 #search-wrapper #search-box {
 	margin-left: 1em;
 	padding-left: 0px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 #utils {
@@ -335,26 +342,26 @@ span.dash_divider {
     color: #666;
 }
 
-#rdetail_header {
+.rdetail_header {
     padding: 5px 7px 6px 0px;
     margin-left: 1em;
     border-bottom: 1px dotted #ccc;
 }
 
-#rdetail_results a {
-    color:#B20838;
+.rdetail_results a {
+    color:#007a54;
     font-weight:bold;
     font-size: 1.2em;
 }
 
-#rdetail_result_count {
+.rdetail_result_count {
     color: black;
     font-weight: normal;
     padding-left: 1em;
     display: inline-block;
 }
 
-#rdetail_result_nav {
+.rdetail_result_nav {
     font-weight:normal;
     padding-left: 1em;
     display: inline-block;
@@ -672,6 +679,13 @@ div.format_icon {
 	height:29px;
 }
 
+#login-failed-message {
+	font-size: 125%;
+    font-weight: bold;
+	color: red;
+    padding-top: 1em;
+}
+
 #home-buttons-inner {
 	height:117px;
 	background:#bda964;
@@ -976,7 +990,9 @@ div.result_place_hold {
 	text-align:center;
 	padding-top:20px;
 	font-size:16px;
-	font-weight:990033
+	font-weight:bold;
+}
+
 .chili_link {
 	width:100px !important;
 	text-align: center !important;
@@ -1428,4 +1444,17 @@ a.preflib_change {
     padding: 1em;
     margin: 1em;
     border: thick solid red;
+}
+
+#locale_picker_form {
+    float: right;
+    padding: 0.5em 1em 0.5em 0;
+    border-right: thin #69A088 solid;
+}
+
+#locale_picker_form * {
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    font-size: 1em;
 }
