@@ -130,9 +130,6 @@
                                                                 </td>
                                                             </tr>
                                                         [% END %]
-                                                        
-
-                                                        [% END %] <!-- END detail_record_view -->
 							[% FOR uri IN args.uris %]
                                                             <tr name='bib_uri_list' class='result_table_title_cell'>
                                                                 <td valign='top'>
@@ -141,9 +138,6 @@
                                                                 <td><a href="[% uri.href %]">[% uri.link | html %]</a>[% ' - ' _ uri.note | html IF uri.note %]</td>
                                                             </tr>
                                                             [% END %]
-                                                        
-
-                                                        [% IF CGI.param('detail_record_view') %]
 							    [%- IF args.holdings.size > 0;
                                                                 FOREACH copy IN args.holdings;
                                                                     IF copy.part_label != '';
@@ -222,6 +216,13 @@
                                             <td nowrap='nowrap' width="1" align="right">
                                                 <div class="result_table_utils_cont">
                                                     <div class="result_table_utils">
+[%- search_ou = ctx.search_ou;
+    num_holdable_copies = attrs.marc_xml.findnodes('//*[local-name()="holdings" and @has_holdable="true"]').size || 0;
+    IF ctx.place_unfillable ||
+        ( num_holdable_copies > 0
+            && (ctx.holds_block.enabled != 'true' || attrs.org_copy_counts.$search_ou.available == 0)
+        )
+%]
                                                         <div class="results_aux_utils place_hold"><a
                                                                 href="[% mkurl(ctx.opac_root _ '/place_hold', 
                                                                     {hold_target => rec.id, hold_type => 'T', hold_source_page => mkurl()}) %]" 
@@ -229,8 +230,12 @@
                                                                 src="[% ctx.media_prefix %]/images/green_check.png"
                                                                 alt=""/><span class="result_place_hold">[% l('Place Hold') %]</span></a>
                                                         </div>
+[%- END -%]
                                                         <div class="results_aux_utils result_util">
-                                                            [%  
+                                                            [%  IF ctx.user;
+                                                                INCLUDE "opac/parts/bookbag_actions.tt2";
+                                                            %]
+                                                            [%  ELSE;
                                                                 operation = ctx.mylist.grep(rec.id).size ? "delete" : "add";
                                                                 label = (operation == "add") ? l("Add to my list") : l("Remove from my list");
                                                                 href = mkurl(ctx.opac_root _ '/mylist/' _ operation, 
@@ -240,6 +245,7 @@
                                                                 <img src="[% ctx.media_prefix %]/images/clipboard.png" alt="" />
                                                                 [% label %]
                                                             </a>
+                                                            [% END %]
                                                         </div>
                                                         [% IF ENV.OILS_CONTENT_CAFE_USER %]
                                                         <div class="results_aux_utils result_util">

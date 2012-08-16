@@ -1,13 +1,11 @@
-[%- 
-    USE CGI = CGI_utf8;
-    hostname = CGI.url({'-base' => 1});
--%]
 <div id="footer-wrap">
 <div id="footer">
-	<a href="[% hostname %]">[% l('Dynamic catalog') %]</a> &nbsp;|&nbsp;
-	<a href="http://brain.mohawkcollege.ca/AskUs/">[% l('AskUs') %]</a> &nbsp;|&nbsp;
-	<a href="http://mohawkcollege.ca.libguides.com/technical-troubleshooting">[% l('Technical Troubleshooting') %]</a>   
-[% IF ctx.timing %]
+    <a href="/">[% l('Dynamic catalog') %]</a> &nbsp;|&nbsp;
+    <a href="http://example.com">[% l('Bottom Link 2') %]</a> &nbsp;|&nbsp;
+    <a href="http://example.com">[% l('Bottom Link 3') %]</a> &nbsp;|&nbsp;
+    <a href="http://example.com">[% l('Bottom Link 4') %]</a> &nbsp;|&nbsp;
+    <a href="http://example.com">[% l('Bottom Link 5') %]</a>
+    [% IF ctx.timing %]
     <div id="timing">
         [% FOR event IN ctx.timing %]
         At <span class="timing-time">[% event.0 | format("%0.4f") %]</span>:
