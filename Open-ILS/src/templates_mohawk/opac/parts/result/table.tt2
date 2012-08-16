@@ -130,9 +130,6 @@
                                                                 </td>
                                                             </tr>
                                                         [% END %]
-                                                        
-
-                                                        [% END %] <!-- END detail_record_view -->
 							[% FOR uri IN args.uris %]
                                                             <tr name='bib_uri_list' class='result_table_title_cell'>
                                                                 <td valign='top'>
@@ -141,9 +138,6 @@
                                                                 <td><a href="[% uri.href %]">[% uri.link | html %]</a>[% ' - ' _ uri.note | html IF uri.note %]</td>
                                                             </tr>
                                                             [% END %]
-                                                        
-
-                                                        [% IF CGI.param('detail_record_view') %]
 							    [%- IF args.holdings.size > 0;
                                                                 FOREACH copy IN args.holdings;
                                                                     IF copy.part_label != '';
