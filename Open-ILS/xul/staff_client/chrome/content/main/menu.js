@@ -1055,6 +1055,10 @@ main.menu.prototype = {
                 ['oncommand'],
                 function(event) { open_eg_web_page('conify/global/asset/copy_location_group', null, event); }
             ],
+            'cmd_local_admin_search_filter_group' : [
+                ['oncommand'],
+                function(event) { open_eg_web_page('conify/global/actor/search_filter_group', null, event); }
+            ],
             'cmd_acq_create_invoice' : [
                 ['oncommand'],
                 function(event) { open_eg_web_page('acq/invoice/view?create=1', 'menu.cmd_acq_create_invoice.tab', event); }
@@ -1278,21 +1282,24 @@ main.menu.prototype = {
                                 var cookieSvc = Components.classes["@mozilla.org/cookieService;1"].getService(Components.interfaces.nsICookieService);
 
                                 cookieSvc.setCookieString(cookieUriSSL, null, "ses="+obj.data.session.key + "; secure;", null);
-
-                        } catch(E) {
-                            alert(offlineStrings.getFormattedString(main.session_cookie.error, [E]));
-                        }
-
+                            } catch(E) {
+                                alert(offlineStrings.getFormattedString(main.session_cookie.error, [E]));
+                            }
                         } else {
                             if (network.get_new_session(offlineStrings.getString('menu.cmd_chg_session.label'),{'url_prefix':obj.url_prefix})) {
                                 obj.data.stash_retrieve();
-                                obj.data.list.au[1] = JSON2js( temp_au );
-                                obj.data.stash('list');
-                                obj.data.previous_session = JSON2js( temp_ses );
-                                obj.data.previous_menu_perms = obj.data.menu_perms;
+                                if (obj.data.session.is_perm === false) {
+                                    obj.data.list.au[1] = JSON2js( temp_au );
+                                    obj.data.stash('list');
+                                    obj.data.previous_session = JSON2js( temp_ses );
+                                    obj.data.previous_menu_perms = obj.data.menu_perms;
+                                    obj.data.stash('previous_session');
+                                    obj.data.stash('previous_menu_perms');
+                                } else {
+                                    var temp_session_object = JSON2js( temp_ses );
+                                    network.simple_request('AUTH_DELETE', [ temp_session_object.key ] );
+                                }
                                 obj.data.menu_perms = false;
-                                obj.data.stash('previous_session');
-                                obj.data.stash('previous_menu_perms');
                                 obj.data.stash('menu_perms');
                             }
                         }

@@ -238,10 +238,12 @@
         FOR node IN xml.findnodes(xpath);
             FOR attr IN ['count', 'available', 'unshadow', 'transcendant', 'org_unit']; 
                 depth = node.getAttribute('depth');
+                org_unit = node.getAttribute('org_unit');
                 args.copy_counts.$depth.$attr = node.getAttribute(attr);
+                args.org_copy_counts.$org_unit.$attr = node.getAttribute(attr);
             END;
         END;
-        
+
         # Get preferred library copy count
         args.plib_copy_counts = {};
         count_type = 'pref_lib';
@@ -266,5 +268,20 @@
             END;
         END;
 
+    END;
+
+    # Get the library or location group
+    # get_library()
+    BLOCK get_library;
+        IF !loc_name; 
+            loc_name = 'loc';
+            IF show_loc_groups; loc_name = 'locg'; END;
+        END;
+        IF !loc_value;
+            loc_value = CGI.param('loc') || ctx.search_ou;
+            IF show_loc_groups; 
+                loc_value = CGI.param('locg') || ctx.search_ou;
+            END;
+        END;
     END;
 %]

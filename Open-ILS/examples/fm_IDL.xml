@@ -4934,13 +4934,13 @@ SELECT  usr,
 	</class>
 	<class id="asfge" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="actor::search_filter_group_entry" oils_persist:tablename="actor.search_filter_group_entry" reporter:label="Search Filter Group Entry" oils_persist:field_safe="true">
 		<fields oils_persist:primary="id" oils_persist:sequence="actor.search_filter_group_entry_id_seq">
-			<field name="id" reporter:datatype="id" reporter:selector="label"/>
+			<field name="id" reporter:datatype="id"/>
 			<field name="grp" reporter:datatype="link"/>
 			<field name="pos" reporter:datatype="int"/>
 			<field name="query" reporter:datatype="link"/>
 		</fields>
 		<links>
-			<link field="grp" reltype="has_a" key="id" map="" class="asfge"/>
+			<link field="grp" reltype="has_a" key="id" map="" class="asfg"/>
 			<link field="query" reltype="has_a" key="id" map="" class="asq"/>
 		</links>
         <permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
@@ -5031,7 +5031,7 @@ SELECT  usr,
 		<oils_persist:source_definition><![CDATA[
 		SELECT
 			ahr.*,
-			COALESCE(acplo.position, 999) AS
+			COALESCE(acplo.position, acpl_ordered.fallback_position) AS
 				copy_location_order_position,
 			CASE WHEN au.alias IS NOT NULL THEN
 				au.alias
@@ -5055,6 +5055,10 @@ SELECT  usr,
 		JOIN asset.call_number_prefix acnp ON (acn.prefix = acnp.id)
 		JOIN asset.call_number_suffix acns ON (acn.suffix = acns.id)
 		JOIN actor.usr au ON (au.id = ahr.usr)
+		JOIN (
+			SELECT *, (ROW_NUMBER() OVER (ORDER BY name) + 1000000) AS fallback_position
+			FROM asset.copy_location
+		) acpl_ordered ON (acpl_ordered.id = acp.location)
 		LEFT JOIN actor.usr_standing_penalty ausp 
 			ON (ahr.usr = ausp.usr AND (ausp.stop_date IS NULL OR ausp.stop_date > NOW()))
 		LEFT JOIN config.standing_penalty csp
@@ -6999,7 +7003,7 @@ SELECT  usr,
 		</links>
 	</class>
 
-	<class id="acqfc" controller="open-ils.cstore" oils_obj:fieldmapper="acq::fiscal_calendar" oils_persist:tablename="acq.fiscal_calendar" reporter:label="Fiscal Calendar">
+	<class id="acqfc" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="acq::fiscal_calendar" oils_persist:tablename="acq.fiscal_calendar" reporter:label="Fiscal Calendar">
 		<fields oils_persist:primary="id" oils_persist:sequence="acq.fiscal_calendar_id_seq">
 			<field reporter:label="Fiscal Calendar ID" name="id" reporter:datatype="id" reporter:selector='name'/>
 			<field reporter:label="Fiscal Calendar Name" name="name" reporter:datatype="text"/>
@@ -7008,21 +7012,17 @@ SELECT  usr,
 		<links>
             <link field="years" reltype="has_many" map="" key="calendar" class="acqfy"/>
 		</links>
-		<!--
-			For now, we don't have pcrud as one of the controllers, so the permacrud section is moot.
-			But here's what it should look like if we ever do use pcrud.
-		-->
 		<permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
 			<actions>
 				<create permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
-				<retrieve permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
+				<retrieve permission="STAFF_LOGIN" global_required="true"/>
 				<update permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
 				<delete permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
 			</actions>
 		</permacrud>
 	</class>
 
-	<class id="acqfy" controller="open-ils.cstore" oils_obj:fieldmapper="acq::fiscal_year" oils_persist:tablename="acq.fiscal_year" reporter:label="Fiscal Year">
+	<class id="acqfy" controller="open-ils.cstore open-ils.pcrud" oils_obj:fieldmapper="acq::fiscal_year" oils_persist:tablename="acq.fiscal_year" reporter:label="Fiscal Year">
 		<fields oils_persist:primary="id" oils_persist:sequence="acq.fiscal_year_id_seq">
 			<field reporter:label="Fiscal Year ID" name="id" reporter:datatype="id" reporter:selector='year'/>
 			<field reporter:label="Calendar" name="calendar" reporter:datatype="link"/>
@@ -7033,14 +7033,10 @@ SELECT  usr,
 		<links>
 			<link field="calendar" reltype="has_a" key="id" map="" class="acqfc"/>
 		</links>
-		<!--
-			For now, we don't have pcrud as one of the controllers, so the permacrud section is moot.
-			But here's what it should look like if we ever do use pcrud.
-		-->
 		<permacrud xmlns="http://open-ils.org/spec/opensrf/IDL/permacrud/v1">
 			<actions>
 				<create permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
-				<retrieve permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
+				<retrieve permission="STAFF_LOGIN" global_required="true"/>
 				<update permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
 				<delete permission="ADMIN_ACQ_FISCAL_YEAR" global_required="true"/>
 			</actions>
@@ -9654,58 +9650,26 @@ SELECT  usr,
 			<link field="claim_policy_action" reltype="has_a" key="id" map="" class="acqclpa"/>
 		</links>
 	</class>
-
-	<class id="acqlisum" controller="open-ils.cstore" oils_obj:fieldmapper="acq::lineitem_summary" oils_persist:readonly="true" reporter:label="Lineitem Summary">
+	<class id="acqlisum" controller="open-ils.cstore" oils_obj:fieldmapper="acq::lineitem_summary" oils_persist:readonly="true" reporter:label="Lineitem Summary" oils_persist:tablename="acq.lineitem_summary">
+		<fields oils_persist:primary="lineitem" oils_persist:sequence="acq.lineitem_id_seq">
+			<field reporter:label="Lineitem" name="lineitem" reporter:datatype="link"/>
+			<field reporter:label="Item Count" name="item_count" reporter:datatype="int"/>
+			<field reporter:label="Receive Count" name="recv_count" reporter:datatype="int"/>
+			<field reporter:label="Cancel Count" name="cancel_count" reporter:datatype="int"/>
+			<field reporter:label="Invoice Count" name="invoice_count" reporter:datatype="int"/>
+			<field reporter:label="Claim Count" name="claim_count" reporter:datatype="int"/>
+			<field reporter:label="Estimated Amount" name="estimated_amount" reporter:datatype="money"/>
+			<field reporter:label="Encumbrance Amount" name="encumbrance_amount" reporter:datatype="money"/>
+			<field reporter:label="Paid Amount" name="paid_amount" reporter:datatype="money"/>
+		</fields>
+		<links>
+			<link field="lineitem" reltype="has_a" key="id" map="" class="jub"/>
+		</links>
+    </class>
+	<class id="acqlisumi" controller="open-ils.cstore" oils_obj:fieldmapper="acq::lineitem_summary_invoiceable" oils_persist:readonly="true" reporter:label="Invoiceable Lineitem Summary">
 		<oils_persist:source_definition>
-
-            SELECT 
-                li.id AS lineitem, 
-                (
-                    SELECT COUNT(lid.id) 
-                    FROM acq.lineitem_detail lid
-                    WHERE lineitem = li.id
-                ) AS item_count,
-                (
-                    SELECT COUNT(lid.id) 
-                    FROM acq.lineitem_detail lid
-                    WHERE recv_time IS NOT NULL AND lineitem = li.id
-                ) AS recv_count,
-                (
-                    SELECT COUNT(lid.id) 
-                    FROM acq.lineitem_detail lid
-                    WHERE cancel_reason IS NOT NULL AND lineitem = li.id
-                ) AS cancel_count,
-                (
-                    SELECT COUNT(lid.id) 
-                    FROM acq.lineitem_detail lid
-                        JOIN acq.fund_debit debit ON (lid.fund_debit = debit.id)
-                    WHERE NOT debit.encumbrance AND lineitem = li.id
-                ) AS invoice_count,
-                (
-                    SELECT COUNT(DISTINCT(lid.id)) 
-                    FROM acq.lineitem_detail lid
-                        JOIN acq.claim claim ON (claim.lineitem_detail = lid.id)
-                    WHERE lineitem = li.id
-                ) AS claim_count,
-                (
-                    SELECT (COUNT(lid.id) * li.estimated_unit_price)::NUMERIC(8,2)
-                    FROM acq.lineitem_detail lid
-                    WHERE lid.cancel_reason IS NULL AND lineitem = li.id
-                ) AS estimated_amount,
-                (
-                    SELECT SUM(debit.amount)::NUMERIC(8,2)
-                    FROM acq.lineitem_detail lid
-                        JOIN acq.fund_debit debit ON (lid.fund_debit = debit.id)
-                    WHERE debit.encumbrance AND lineitem = li.id
-                ) AS encumbrance_amount,
-                (
-                    SELECT SUM(debit.amount)::NUMERIC(8,2)
-                    FROM acq.lineitem_detail lid
-                        JOIN acq.fund_debit debit ON (lid.fund_debit = debit.id)
-                    WHERE NOT debit.encumbrance AND lineitem = li.id
-                ) AS paid_amount
-
-                FROM acq.lineitem AS li
+            SELECT * FROM acq.lineitem_summary 
+				WHERE item_count > (invoice_count + cancel_count)
         </oils_persist:source_definition>
 		<fields oils_persist:primary="lineitem" oils_persist:sequence="acq.lineitem_id_seq">
 			<field reporter:label="Lineitem" name="lineitem" reporter:datatype="link"/>
@@ -9722,8 +9686,6 @@ SELECT  usr,
 			<link field="lineitem" reltype="has_a" key="id" map="" class="jub"/>
 		</links>
     </class>
-
-
 	<class id="iatc" controller="open-ils.reporter-store" oils_obj:fieldmapper="action::intersystem_transit_copy" oils_persist:readonly="true" reporter:core="true" reporter:label="Inter-system Copy Transit">
 		<oils_persist:source_definition>
 

@@ -514,8 +514,8 @@ sub check_1hit_redirect {
 
     my $base_url = sprintf(
         '%s://%s%s/record/%s',
-        $ctx->{proto}, 
-        $self->apache->hostname,
+        $self->ctx->{proto},
+        $self->ctx->{hostname},
         $self->ctx->{opac_root},
         $$rec_ids[0],
     );
@@ -523,7 +523,7 @@ sub check_1hit_redirect {
     # If we get here from the same record detail page to which we
     # now wish to redirect, do not perform the redirect.  This
     # approach seems to work well, with the rare exception of 
-    # performing a new serach directly from the detail page that 
+    # performing a new search directly from the detail page that 
     # happens to result in the same single hit.  In this case, the 
     # user will be left on the search results page.  This could be 
     # overcome w/ additional CGI, etc., but I'm not sure it's necessary.
@@ -683,12 +683,13 @@ sub call_number_browse_standalone {
 
     if (my $cnfrag = $self->cgi->param("query")) {
         my $url = sprintf(
-            'http%s://%s%s/cnbrowse?cn=%s',
-            $self->cgi->https ? "s" : "",
-            $self->apache->hostname,
+            '%s://%s%s/cnbrowse?cn=%s',
+            $self->ctx->{proto},
+            $self->ctx->{hostname},
             $self->ctx->{opac_root},
             $cnfrag # XXX some kind of escaping needed here?
         );
+        $url .= '&locg=' . $self->_get_search_lib() if ($self->_get_search_lib());
         return $self->generic_redirect($url);
     } else {
         return $self->generic_redirect; # return to search page
