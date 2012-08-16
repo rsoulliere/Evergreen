@@ -160,6 +160,8 @@ include::admin/restrict_Z39.50_sources_by_perm_group.txt[]
 
 include::admin/booking-admin.txt[]
 
+include::admin/permissions.txt[]
+
 include::admin/SMS_messaging.txt[]
 
 include::admin/user_activity_type.txt[]
@@ -279,9 +281,9 @@ include::reports/reporter_cloning_shared_templates.txt[]
 
 include::reports/reporter_add_data_source.txt[]
 
-include::reports/running_recurring_reports.txt[]
+include::reports/reporter_running_recurring_reports.txt[]
 
-include::reports/reporter_template_termionology.txt[]
+include::reports/reporter_template_terminology.txt[]
 
 include::reports/reporter_export_usingpgAdmin.txt[]
 
