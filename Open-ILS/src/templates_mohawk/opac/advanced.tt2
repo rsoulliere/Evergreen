@@ -22,7 +22,7 @@
                     id="num_search">[% l('Numeric Search') %]</a>
                 <a href="[% mkurl('', {pane => 'expert'}) %]"
                     [% IF pane == 'expert' %]class="on" [% END %]
-                    id="expert_search">[% l('Expert Search') %]</a>
+                    id="expert_search">[% l('Staff Search') %]</a>
             </div>
         </div>
     </div>
