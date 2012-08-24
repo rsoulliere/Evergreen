@@ -8,11 +8,9 @@
             id="home_adv_search_link"><span
             class="adv_search_font">[% l('Advanced Search') %]</span></a>
     </div>
-    <div class="searchbar">[%- l('Search ');
-        INCLUDE "opac/parts/coded_value_selector.tt2"
-            attr=["mattype", "item_type"] none_ok=1 none_label=l('All Formats');
-            l(' for ');
-        %]
+<div style="font-weight: bold">[%- l('Search ');
+                l(' for ');
+%]
         <span class='search_box_wrapper'>
             <input type="text" id="search_box" name="query"
                 value="[% is_advanced ? ctx.naive_query_scrub(ctx.processed_search_query) : CGI.param('query') | html %]"
@@ -23,12 +21,15 @@
                 store_args='{"org_unit_getter": function() { return [% ctx.search_ou %]; }}'
                 [%-     END # opac_visible -%]
                 [%- ELSE -%]
-                    [% IF basic_search != "f" %] autofocus [% END %] x-webkit-speech
+                autofocus x-webkit-speech
                 [%- END # autosuggest enabled %] />
         </span>
-        [%- INCLUDE "opac/parts/qtype_selector.tt2" id="qtype";
-            l(' in '); INCLUDE build_org_selector show_loc_groups=1
-    %]
+        [%- 
+                INCLUDE "opac/parts/qtype_selector.tt2" id="qtype";
+                INCLUDE "opac/parts/coded_value_selector.tt2"
+                attr=["mattype", "item_type"] none_ok=1 none_label=l('All Formats');
+                l(' at '); INCLUDE build_org_selector show_loc_groups=1
+        %]
     <span>
         <input id='search-submit-go' type="submit" value="[% l('Search') %]" alt="[% l('Search') %]" class="opac-button"
             onclick='setTimeout(function(){$("search-submit-spinner").className=""; $("search-submit-go").className="hidden"}, 2000)'/>
