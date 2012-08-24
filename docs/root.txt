@@ -123,6 +123,8 @@ include::admin/staff_client-tab_buttons.txt[]
 
 include::admin/staff_client-double_clicking.txt[]
 
+include::admin/staff_client-patron_border.txt[]
+
 include::admin/staff_client-sorting_columns.txt[]
 
 include::admin/staff_client-recent_searches.txt[]
@@ -145,6 +147,8 @@ include::admin/acquisitions_admin.txt[]
 include::admin/authorities.txt[]
 
 include::admin/cn_prefixes_and_suffixes.txt[]
+
+include::admin/circulation_limit_groups.txt[]
 
 include::admin/restrict_Z39.50_sources_by_perm_group.txt[]
 
@@ -297,6 +301,15 @@ Use this part for information about searching the Evergreen public access catalo
 include::opac/my_lists.txt[]
 
 include::opac/kids_opac.txt[]
+
+// Push titles down one level.
+:leveloffset: 1
+
+include::opac/search_form.txt[]
+
+// Return to normal title levels.
+:leveloffset: 0
+
 
 Developer Resources
 ===================

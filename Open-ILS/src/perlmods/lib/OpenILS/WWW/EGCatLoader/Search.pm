@@ -578,6 +578,8 @@ sub item_barcode_shortcut {
         $self->ctx->{search_facets} = {};
         $self->ctx->{hit_count} = scalar @data;
         $self->ctx->{page_size} = $self->ctx->{hit_count};
+        # load temporary_list settings for user and ou:
+        $self->_load_lists_and_settings if ($self->ctx->{user});
 
         return Apache2::Const::OK;
     } {
@@ -672,6 +674,9 @@ sub marc_expert_search {
         }
     );
     $self->timelog("Returned from calling get_records_and_facets() for MARC expert");
+
+    # load temporary_list settings for user and ou:
+    $self->_load_lists_and_settings if ($self->ctx->{user});
 
     $self->ctx->{records} = [@data];
 
