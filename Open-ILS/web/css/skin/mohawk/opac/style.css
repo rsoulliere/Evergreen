@@ -1227,7 +1227,7 @@ a.dash-link:hover { text-decoration: underline !important; }
 }
 
 .opac-button-header {
-    background: #69A088;
+    background: #F58220;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -1241,7 +1241,7 @@ a.dash-link:hover { text-decoration: underline !important; }
 }
 
 a.opac-button:hover, .results_header_btns a:hover, #simple-detail-view-links a:hover {
-    background: #B20838;
+    background: #F58220;
     text-decoration: none;
 }
 
