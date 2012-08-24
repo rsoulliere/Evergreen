@@ -1153,7 +1153,7 @@ div.facet_sidebar {
     padding: 0; border: 0; margin: 0;
     vertical-align: middle;
 }
-.subtle-button:hover { text-decoration: underline; cursor: pointer; }
+.subtle-button:hover { text-decoration: none; cursor: pointer; }
 .no-dec:hover { text-decoration: none; }
 .pending-addr td { background-color: #ffcccc !important; border: 0 !important; }
 
@@ -1237,10 +1237,11 @@ a.dash-link:hover { text-decoration: underline !important; }
     color: white;
     vertical-align: middle;
     display: table-cell;
+    text-decoration: none;
 }
 
 a.opac-button:hover, .results_header_btns a:hover, #simple-detail-view-links a:hover {
-    background: #00593d;
+    background: #B20838;
     text-decoration: none;
 }
 
