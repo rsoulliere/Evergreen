@@ -1100,10 +1100,10 @@ div.facet_sidebar {
 }
 
 #footer-wrap {
-    background: linear-gradient(#F58220, #252525);
+ /*   background: linear-gradient(#F58220, #252525);
     background: -moz-linear-gradient(#F58220, #252525);
     background: -o-linear-gradient(#F58220, #252525);
-    background: -webkit-linear-gradient(#F58220, #252525);
+    background: -webkit-linear-gradient(#F58220, #252525); */
     background-color: #F58220;
 }
 
