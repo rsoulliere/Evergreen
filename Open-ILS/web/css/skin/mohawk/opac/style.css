@@ -1211,19 +1211,19 @@ a.dash-link:hover { text-decoration: underline !important; }
 }
 
 .opac-button, .results_header_btns, #simple-detail-view-links { 
-    color: #FBF9F9;
-    font-weight: bold; 
+ color: #fff;
+    font-weight: bold;
     text-decoration: none;
-    text-shadow: 1px 1px 1px #555555;
+    text-shadow: 1px 1px 1px #000;
     cursor: pointer !important;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    border: 1px solid #007a54;
-    background: linear-gradient(#007a54, #00593d);
-    background: -moz-linear-gradient(#007a54, #00593d);
-    background: -o-linear-gradient(#007a54, #00593d);
-    background: -webkit-linear-gradient(#007a54, #00593d);
-    background-color: #00593d;
+    border: 1px solid #ccc;
+    background: linear-gradient(#F58220, #F58220);
+    background: -moz-linear-gradient(#F58220, #F58220);
+    background: -o-linear-gradient(#F58220, #F58220);
+    background: -webkit-linear-gradient(#F58220, #F58220);
+    background-color: #F58220;
 }
 
 .opac-button-header {

@@ -25,7 +25,18 @@
             </table>
         </td>
     </tr>
-    <tr>
+ <tr class='border_4_2'>
+        <td align="left" colspan='2'>
+            <input type="submit"
+                value="[% l('Search') %]"
+                class='pointer opac-button' />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="reset"
+                value="[% l('Reset form') %]"
+                class="opac-button" />
+        </td>
+    </tr>
+<tr>
         <td align='top'>
           <div style="width:100%;" class="header_middle">[% l('Search Filters') %]</div>
           <table cellpadding='10' cellspacing='0' border='0'><tr>
@@ -113,17 +124,6 @@
             </table>
         </td>
     </tr>
-    <tr class='border_4_2'>
-        <td align="left" colspan='2'>
-            <input type="submit"
-                value="[% l('Search') %]"
-                class='pointer opac-button' />
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <input type="reset"
-                value="[% l('Reset form') %]"
-                class="opac-button" />
-        </td>
-    </tr>
-</table>
+    </table>
 <input type="hidden" name="_adv" value="1" />
 </form>
