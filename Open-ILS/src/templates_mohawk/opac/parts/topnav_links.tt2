@@ -2,7 +2,7 @@
     <div id="gold-links">
         <div id="header-links">
 <a href="http://www.mohawkcollege.ca">[% l('Mohawk College') %]</a>
-<a href="http://brain.mohawkcollege.ca">[% l('TheBrain') %]</a>            
+<a href="http://brain.mohawkcollege.ca">[% l('Mohawk College Library') %]</a>            
 <a href="/">[% l('Catalogue Home') %]</a>
         </div>
     </div>
