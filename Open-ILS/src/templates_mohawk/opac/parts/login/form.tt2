@@ -84,14 +84,10 @@
                         </tr>
                         <tr>
                             <td width="42%" class="lbl1">
-                                [% l('Library Card Number or Username') %]
+                                [% l('Username') %]
                                 <br />
-                                <span class="lbl2">
-                                    [% l('Please include leading zeros and no spaces.') %]
-                                    <br/>
-                                    [% l('Example: 0026626051') %]
-                                </span>
-                                <br /><br />
+				[% l('Same as you MocoMotion username.') %]
+				<br /><br />
                             </td>
                             <td width="58%" valign="top">
                                 <div class="input_bg">
@@ -106,7 +102,7 @@
                         </tr>
                         <tr>
                             <td valign="top" class="lbl1">
-                                [% l('PIN Number or Password') %]<br />
+                                [% l('Password') %]<br />
                                 [% INCLUDE "opac/parts/login/password_hint.tt2" %]
                             </td>
                             <td valign="top">
