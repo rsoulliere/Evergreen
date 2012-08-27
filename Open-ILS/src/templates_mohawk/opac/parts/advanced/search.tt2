@@ -75,15 +75,7 @@
                             <strong>[% l("Search locations") %]</strong><br />
                             [% PROCESS "opac/parts/org_selector.tt2";
                                 INCLUDE build_org_selector show_loc_groups=1 %]
-                            <div style="position:relative;top:7px;">
-                                <input type='checkbox' name="modifier"
-                                    value="available"[% CGI.param('modifier').grep('available').size ? ' checked="checked"' : '' %]
-                                    id='opac.result.limit2avail' />
-                                <label style="position:relative;top:-2px;"
-                                    for='opac.result.limit2avail'>
-                                    [% l("Limit to Available") %]</label>
-                            </div>
-                        </td>
+                                                   </td>
                         <td valign='top'>
                             <strong>[% l("Publication Year") %]</strong><br />
                             <select name='pubdate' onchange='
@@ -107,6 +99,18 @@
                             </div>
                         </td>
                     </tr>
+		<tr>
+			<td>
+			 <div style="position:relative;top:7px;">
+                                <input type='checkbox' name="modifier"
+                                    value="available"[% CGI.param('modifier').grep('available').size ? ' checked="checked"' : '' %]
+                                    id='opac.result.limit2avail' />
+                           	<strong><label style="position:relative;top:-2px;"
+                                    for='opac.result.limit2avail'>
+                                    [% l("Limit to Available") %]</label></strong>
+                            </div>
+			</td>
+		</tr>
                     <!-- TODO: Copy Location Filter -->
                     <tr class='hide_me'>
                         <td align='right'>[% l("Shelving Location") %]</td>
