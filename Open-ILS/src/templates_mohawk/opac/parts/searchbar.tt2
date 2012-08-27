@@ -33,11 +33,13 @@
                 attr=["mattype", "item_type"] none_ok=1 none_label=l('All Formats');
                 l(' at '); INCLUDE build_org_selector show_loc_groups=1
         %]
-    <span>
+    <span style="padding-right: 20px">
         <input id='search-submit-go' type="submit" value="[% l('Search') %]" alt="[% l('Search') %]" class="opac-button"
             onclick='setTimeout(function(){$("search-submit-spinner").className=""; $("search-submit-go").className="hidden"}, 2000)'/>
         <img id='search-submit-spinner' src='/opac/images/progressbar_green.gif' style='height:16px;width:16px;' class='hidden' alt=''/>
     </span>
+<a style="padding:2px 2px 2px 2px;"  href="[% mkurl(ctx.opac_root _ '/home', {$loc_name => loc_value},
+1) %]"class="pointer opac-button">[% l('Clear all boxes / New search') %]</a>
     </div>
     [% IF ctx.bookbag %]
     <div id="search-only-bookbag-container">
