@@ -8,7 +8,10 @@
             id="home_adv_search_link"><span
             class="adv_search_font">[% l('Advanced Search') %]</span></a>
     </div>
-<div style="font-weight: bold">[%- l('Search ');
+<div style="font-weight: bold">
+<br />
+
+[%- l('Search ');
                 l(' for ');
 %]
         <span class='search_box_wrapper'>
@@ -67,4 +70,5 @@
     </div>
     -->
     <div class="clear-both"></div>
+<br />
 </div>
