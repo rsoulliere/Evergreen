@@ -111,7 +111,7 @@
                                                                 [% END %]
                                                             [% END %]
                                                         [% END %]
-
+                                                        [% END %] <!-- END detail_record_view -->
                                                         [% IF attrs.edition %]
                                                             <tr name="results_edition_tr">
                                                                 <td valign="top">
@@ -177,7 +177,6 @@
                                                             [%- has_parts = 'false';
                                                                 END;
                                                              %]
-                                                        [% END %] <!-- END detail_record_view -->
                                                     </table>
                                                     [% PROCESS "opac/parts/result/copy_counts.tt2" %]
                                                     [% IF rec.user_circulated %]
