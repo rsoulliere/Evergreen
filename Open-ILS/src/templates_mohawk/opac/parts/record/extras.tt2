@@ -18,12 +18,11 @@
             {name => 'summaryplus',  label => l('Summaries &amp; More'), hide => hide_summary}, 
             {name => 'contents',  label => l('Contents'), hide => !attrs.contents},
             {name => 'annotation', label => l('Annotation'), hide => 1}, 
-            {name => 'awards',  label => l('Awards, Reviews, & Suggested Reads')}, 
             {name => 'excerpt',  label => l('Excerpt'), hide => 1},
             {name => 'issues',   label => l('Issues Held'), hide => !(ctx.have_holdings_to_show || ctx.have_mfhd_to_show)},
             {name => 'preview',  label => l('Preview'), hide => 1}, 
             {name => 'cnbrowse', label => l('Shelf Browser with QR Codes')},
-            {name => 'marchtml', label => l('MARC Record')}
+            {name => 'marchtml', label => l('Staff Record')}
         ];
 
         MACRO tab_is_active(tab) BLOCK;
