@@ -37,7 +37,7 @@
           <div style="width:100%;" class="header_middle">[% l('Search Filters') %]</div>
           <table cellpadding='10' cellspacing='0' border='0'><tr>
             <td valign='top'>
-                <strong>[% l("Item Type") %]</strong><br />
+                <strong>[% l("Formats") %]</strong><br />
                 [%  INCLUDE "opac/parts/coded_value_selector.tt2"
                         attr=["mattype", "item_type"] multiple="multiple" size="4" %]
             </td>
@@ -72,7 +72,7 @@
                 <tbody>
                     <tr>
                         <td valign='top'>
-                            <strong>[% l("Search Library") %]</strong><br />
+                            <strong>[% l("Search locations") %]</strong><br />
                             [% PROCESS "opac/parts/org_selector.tt2";
                                 INCLUDE build_org_selector show_loc_groups=1 %]
                             <div style="position:relative;top:7px;">
