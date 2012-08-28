@@ -1,3 +1,27 @@
 <div id="homesearch_main_logo">
-    <strong><center><img src="[% ctx.media_prefix %]/opac/images/main_logo.png" /></center></strong>
+<center>
+        <div style="width: 500px;">
+                <a onClick="window.open('http://lib-wind.mohawkcollege.ca/Chat/library_catalogue.html','chat','width=430,height=375')"
+                href="#">
+                <img alt="Chat" src="/opac/images/BRAINchat_lg_left.png"
+                /> </a>
+                <div id="home_help" style="width: 50%; float:right; vertical-align: top;
+                text-align:left; padding: 0px">
+                        <p>Get instant help from the library during our <a
+href="http://brain.mohawkcollege.ca/AbouttheLibrary/Hours.html">hours of
+service</a> by clicking
+                        the chat bubble or contact us by email: braintogo@mohawkcollege.ca
+                        </p>
+                        <p>
+                        * Read our <a href="http://brain.mohawkcollege.ca/AbouttheLibrary/LibraryFAQs.html">FAQ</a>
+                        <br />
+                        * <a href="http://brain.mohawkcollege.ca/HowTo/books.html">How to find books and
+                        videos guide</a>
+                        </p>
+                </div>
+        </div>
+</center>
 </div>
+~        
+
+
