@@ -4,7 +4,7 @@
         src="[% ctx.media_prefix %]/images/questions.png" alt="[% l('Questions?') %]" style="margin-top:29px;" /></a>
 
     <div style="width:182px;color:black;padding:5px 25px;">
-        [% l('Visit our FAQs section for answers to common questions about how to use your account.') %]
+        [% l('Click "Questions" for answers to common questions about how to use your library account. Click "FAQs" for answers to commonly asked questions about the library.') %]
     </div>
 
     <a href="http://example.com"><img
