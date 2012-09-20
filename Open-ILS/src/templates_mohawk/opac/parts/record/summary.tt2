@@ -103,7 +103,33 @@ IF num_uris > 0;
 [%- INCLUDE "opac/parts/record/copy_table.tt2" copies=ctx.copies %]
 </div>
 [%- END %]
-
+[%- IF attrs.reserve %]
+<h2 id='rdetail_reserves_details_header'>[% l("Item on reserve") %]</h2>
+        [%- IF attrs.reserves_details.0 %]
+                <span class='rdetail_value'>
+                        [% attrs.reserves_details.0 | html %] -
+                        [% attrs.reserves_details.1 | html %]
+                </span><br />
+        [%- END %]
+        [%- IF attrs.reserves_details.2 %]
+                 <span class='rdetail_value'>
+                        [% attrs.reserves_details.2 | html %] -
+                        [% attrs.reserves_details.3 | html %]
+                </span><br />
+        [%- END %]
+        [%- IF attrs.reserves_details.4 %]
+                <span class='rdetail_value'>
+                        [% attrs.reserves_details.4 | html %] -
+                        [% attrs.reserves_details.5 | html %]
+                </span><br />
+        [%- END %]
+	[%- IF attrs.reserves_details.6 %]
+                <span class='rdetail_value'>
+                        [% attrs.reserves_details.6 | html %] -
+                        [% attrs.reserves_details.7 | html %]
+                </span>
+        [%- END %]
+[%- END %]
 
 <h2 id='rdetail_record_details'>[% l("Record details") %]</h2>
 <ul>

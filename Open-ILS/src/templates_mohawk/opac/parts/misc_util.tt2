@@ -46,6 +46,13 @@
             FOR sub IN titsubs; titsubs_content.push(sub.textContent); END;
         args.title_extended = titsubs_content.join(" ");
 
+	args.reserves_details = [];
+        FOR reserve IN xml.findnodes('//*[@tag="506"]/*[@code="a"]');
+        args.reserves_details.push(reserve.textContent);
+        END;
+        args.reserve = args.reserves_details.join(" - ");
+
+
         args.publishers = [];
         FOR sub IN xml.findnodes('//*[@tag="260"]/*[@code="b"]');
             args.publishers.push(sub.textContent);
