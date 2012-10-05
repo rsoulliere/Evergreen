@@ -113,8 +113,8 @@
                                     [%
                                         # If no redirect is offered or it's leading us back to the 
                                         # login form, redirect the user to My Account
-                                       # redirect = CGI.param('redirect_to') || ctx.referer;
-                                        IF !redirect OR redirect.match(ctx.path_info _ '$');
+                                        redirect = CGI.param('redirect_to') || ctx.referer;
+                                        IF !redirect OR redirect.match(ctx.path_info _ '$') OR redirect.match('http://brain.mohawkcollege.ca+');
                                             redirect = CGI.url('-full' => 1) _ '/opac/myopac/main';
                                         END;
                                         redirect = redirect  | replace('^http:', 'https:');
