@@ -58,6 +58,12 @@
             args.publishers.push(sub.textContent);
         END;
         args.publisher = (args.publishers.size) ? args.publishers.0 : '';
+	
+	args.pubplaces = [];
+        FOR sub IN xml.findnodes('//*[@tag="260"]/*[@code="a"]');
+            args.pubplaces.push(sub.textContent);
+        END;
+        args.pubplace = (args.pubplaces.size) ? args.pubplaces.0 : '';
 
         args.pubdates = [];
         FOR sub IN xml.findnodes('//*[@tag="260"]/*[@code="c"]');
