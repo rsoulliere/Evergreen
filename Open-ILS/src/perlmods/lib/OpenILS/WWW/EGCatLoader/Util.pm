@@ -167,7 +167,22 @@ sub init_ro_object_cache {
     # turns an ISO date into something TT can understand
     $ro_object_subs->{parse_datetime} = sub {
         my $date = shift;
-        $date = DateTime::Format::ISO8601->new->parse_datetime(cleanse_ISO8601($date));
+
+        # Probably an accidental entry like '0212' instead of '2012',
+        # but 1) the leading 0 may get stripped in cstore and
+        # 2) DateTime::Format::ISO8601 returns an error as years
+        # must be 2 or 4 digits
+        if ($date =~ m/^\d{3}-/) {
+            $logger->warn("Invalid date had a 3-digit year: $date");
+            $date = '0' . $date;
+        } elsif ($date =~ m/^\d{1}-/) {
+            $logger->warn("Invalid date had a 1-digit year: $date");
+            $date = '000' . $date;
+        }
+
+        my $cleansed_date = cleanse_ISO8601($date);
+
+        $date = DateTime::Format::ISO8601->new->parse_datetime($cleansed_date);
         return sprintf(
             "%0.2d:%0.2d:%0.2d %0.2d-%0.2d-%0.4d",
             $date->hour,
@@ -272,7 +287,7 @@ sub get_records_and_facets {
     # collect the facet data
     my $search = OpenSRF::AppSession->create('open-ils.search');
     my $facet_req = $search->request(
-        'open-ils.search.facet_cache.retrieve', $facet_key, 10
+        'open-ils.search.facet_cache.retrieve', $facet_key
     ) if $facet_key;
 
     # gather up the unapi recs
@@ -291,7 +306,13 @@ sub get_records_and_facets {
             for my $ent (keys %$entries) {
                 push(@entries, {value => $ent, count => $$entries{$ent}});
             };
-            @entries = sort { $b->{count} <=> $a->{count} } @entries;
+
+            # Sort facet entries by 1) count descending, 2) text ascending
+            @entries = sort {
+                $b->{count} <=> $a->{count} ||
+                $a->{value} cmp $b->{value}
+            } @entries;
+
             $facets->{$cmf_id} = {
                 cmf => $self->ctx->{get_cmf}->($cmf_id),
                 data => \@entries
