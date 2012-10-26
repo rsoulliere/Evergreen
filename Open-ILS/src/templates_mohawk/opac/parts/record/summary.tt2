@@ -65,7 +65,6 @@
     IF openurls.size && openurls.0 != '';
 %]
     <div id='rdetail_openurl'>
-        <strong class='rdetail_openurl_title'>[% l("Electronic resources") %]</strong>
         <table><tbody>
 [%-
         FOREACH res IN openurls;
@@ -83,7 +82,6 @@
 num_uris = merged_uris.size;
 IF num_uris > 0;
 -%]
-<h2 class="rdetail_uris">[% l("Electronic resources") %]</h2>
 <div class="rdetail_uris">
     [%- IF num_uris > 1 %]<ul>[% END %]
     [%- FOR uri IN merged_uris %]
