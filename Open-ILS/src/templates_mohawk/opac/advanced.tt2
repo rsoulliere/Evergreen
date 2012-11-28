@@ -6,9 +6,9 @@
     loc = ctx.search_ou;
 -%]
     <div id="search-wrapper">
-        <div id="search-box">
+        <div id="search-box" style="padding:10px;" >
             <a href="[% mkurl(ctx.opac_root _ '/home') %]"
-                id="home_adv_search_link"><span
+                id="home_adv_search_link" class="pointer opac-button"style="margin-left:0px" ><span
                 class="adv_search_font">[%l('Basic Search')%]</span></a>
         </div>
         <div id="adv_search_parent">

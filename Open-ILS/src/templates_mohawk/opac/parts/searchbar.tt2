@@ -3,9 +3,9 @@
     [% UNLESS took_care_of_form -%]
     <form action="[% ctx.opac_root %]/results" method="GET">
     [%- END %]
-    <div>
+    <div style="padding-top:10px;">
         <a href="[% mkurl(ctx.opac_root _ '/advanced') %]"
-            id="home_adv_search_link"><span
+            id="home_adv_search_link"class="pointer opac-button"style="margin-left:0px" ><span
             class="adv_search_font">[% l('Advanced Search') %]</span></a>
     </div>
 <div style="font-weight: bold">
