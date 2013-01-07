@@ -1664,6 +1664,16 @@ main.menu.prototype = {
                     xulG.pref.setBoolPref('oils.copy_editor.copy_location_name_first', !curvalue);
                 }
             ],
+            'cmd_search_prefs' : [
+                ['oncommand'],
+                function() {
+                    try {
+                        obj.set_tab(obj.url_prefix('XUL_SEARCH_PREFS'),{'tab_name' : offlineStrings.getString('menu.cmd_search_prefs.tab'), 'browser' : false});
+                    } catch(E) {
+                        alert(E)
+                    }
+                }
+            ],
         };
 
         JSAN.use('util.controller');
@@ -1722,6 +1732,14 @@ main.menu.prototype = {
                     )
                 );
 
+                x.appendChild(
+                    create_menuitem(
+                        offlineStrings.getString('staff.main.button_bar.default'),
+                        'default',
+                        true
+                    )
+                );
+
                 for (var i = 0; i < this.data.list.atb.length; i++) {
                     var def = this.data.list.atb[i];
                     x.appendChild(
@@ -1768,6 +1786,7 @@ main.menu.prototype = {
                 var x = document.getElementById('main.menu.admin.client.toolbars.current.popup');
                 if (x) {
                     var selectitems = x.getElementsByAttribute('value',button_bar);
+                    if(selectitems.length < 1) selecteditems = x.getElementsByAttribute('value','default');
                     if(selectitems.length > 0) selectitems[0].setAttribute('checked','true');
                 }
             }

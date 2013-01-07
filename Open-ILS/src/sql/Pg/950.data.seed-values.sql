@@ -1567,7 +1567,13 @@ INSERT INTO permission.perm_list ( id, code, description ) VALUES
  ( 538, 'VIEW_SEARCH_FILTER_GROUP', oils_i18n_gettext( 538,
     'Allows staff to view search filter groups and entries', 'ppl', 'description' )),
  ( 539, 'UPDATE_ORG_UNIT_SETTING.ui.hide_copy_editor_fields', oils_i18n_gettext( 539,
-    'Allows staff to edit displayed copy editor fields', 'ppl', 'description' ))
+    'Allows staff to edit displayed copy editor fields', 'ppl', 'description' )),
+ ( 540, 'ADMIN_TOOLBAR_FOR_ORG', oils_i18n_gettext( 540,
+        'Allows a user to create, edit, and delete custom toolbars for org units', 'ppl', 'description')),
+ ( 541, 'ADMIN_TOOLBAR_FOR_WORKSTATION', oils_i18n_gettext( 541,
+        'Allows a user to create, edit, and delete custom toolbars for workstations', 'ppl', 'description')),
+ ( 542, 'ADMIN_TOOLBAR_FOR_USER', oils_i18n_gettext( 542,
+        'Allows a user to create, edit, and delete custom toolbars for users', 'ppl', 'description'))
 ;
 
 
@@ -2998,15 +3004,6 @@ INSERT into config.org_unit_setting_type
         'Any copies that have not been put into reshelving, in-transit, or on-holds-shelf (for a new hold) during the clear shelf process will be put into this status.  This is basically a purgatory status for copies waiting to be pulled from the shelf and processed by hand',
         'coust', 'description'),
     'link', 'ccs')
-
-,( 'circ.holds.clear_shelf.no_capture_holds', 'holds',
-    oils_i18n_gettext('circ.holds.clear_shelf.no_capture_holds',
-        'Bypass hold capture during clear shelf process',
-        'coust', 'label'),
-    oils_i18n_gettext('circ.holds.clear_shelf.no_capture_holds',
-        'During the clear shelf process, avoid capturing new holds on cleared items.',
-        'coust', 'description'),
-    'bool', null)
 
 ,( 'circ.holds.default_estimated_wait_interval', 'holds',
     oils_i18n_gettext('circ.holds.default_estimated_wait_interval',
@@ -9989,8 +9986,15 @@ FOR item IN items;
     END;
     author = bibxml.findnodes('//*[@tag="100"]/*[@code="a"]').textContent;
     item_type = bibxml.findnodes('//*[local-name()="attributes"]/*[local-name()="field"][@name="item_type"]').getAttribute('coded-value');
-
-    helpers.csv_datum(title) %],[% helpers.csv_datum(author) %],[% helpers.csv_datum(item_type) %],[% FOR note IN item.notes; helpers.csv_datum(note.note); ","; END; "\n";
+    pub_date = "";
+    FOR pdatum IN bibxml.findnodes('//*[@tag="260"]/*[@code="c"]');
+        IF pub_date ;
+            pub_date = pub_date _ ", " _ pdatum.textContent;
+        ELSE ;
+            pub_date = pdatum.textContent;
+        END;
+    END;
+    helpers.csv_datum(title) %],[% helpers.csv_datum(author) %],[% helpers.csv_datum(pub_date) %],[% helpers.csv_datum(item_type) %],[% FOR note IN item.notes; helpers.csv_datum(note.note); ","; END; "\n";
 END -%]
 $$
 );

@@ -376,6 +376,24 @@ function main_init() {
             var url = G.auth.controller.view.server_prompt.value.match(/^[^\/]*/).toString() || urls.remote;
 
             G.data.server_unadorned = url; G.data.stash('server_unadorned'); G.data.stash_retrieve();
+            try {
+                G.data.search_lib = G.pref.getIntPref('open-ils.' + url + '.search_lib');
+            } catch(E) {
+                G.data.search_lib = null;
+            }
+            try {
+                G.data.pref_lib = G.pref.getIntPref('open-ils.' + url + '.pref_lib');
+            } catch(E) {
+                G.data.pref_lib = null;
+            }
+            try {
+                G.data.adv_pane = G.pref.getCharPref('open-ils.' + url + '.adv_pane');
+            } catch(E) {
+                G.data.adv_pane = null;
+            }
+            G.data.stash('search_lib');
+            G.data.stash('pref_lib');
+            G.data.stash('adv_pane');
 
             if (! url.match( '^(http|https)://' ) ) { url = 'http://' + url; }
 
