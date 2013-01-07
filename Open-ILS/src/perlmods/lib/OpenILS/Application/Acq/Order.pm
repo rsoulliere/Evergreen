@@ -713,7 +713,8 @@ sub receive_lineitem_detail {
 
     if ($lid->eg_copy_id) {
         my $copy = $e->retrieve_asset_copy($lid->eg_copy_id) or return 0;
-        $copy->status(OILS_COPY_STATUS_IN_PROCESS);
+        # only update status if it hasn't already been updated
+        $copy->status(OILS_COPY_STATUS_IN_PROCESS) if $copy->status == OILS_COPY_STATUS_ON_ORDER;
         $copy->edit_date('now');
         $copy->editor($e->requestor->id);
         $copy->creator($e->requestor->id) if $U->ou_ancestor_setting_value(
@@ -1648,17 +1649,28 @@ sub extract_lineitem_detail_data {
     # ---------------------------------------------------------------------
     # Shelving Location
     if( my $name = $compiled{copy_location}) {
-        my $loc = $mgr->cache($base_org, "copy_loc.$name");
+
+        my $cp_base_org = $base_org;
+
+        if ($compiled{owning_lib}) {
+            # start looking for copy locations at the copy 
+            # owning lib instaed of the upload context org
+            $cp_base_org = $compiled{owning_lib};
+        }
+
+        my $loc = $mgr->cache($cp_base_org, "copy_loc.$name");
         unless($loc) {
-            for my $org (@$org_path) {
+            my $org = $cp_base_org;
+            while ($org) {
                 $loc = $mgr->editor->search_asset_copy_location(
                     {owning_lib => $org, name => $name}, {idlist => 1})->[0];
                 last if $loc;
+                $org = $mgr->editor->retrieve_actor_org_unit($org)->parent_ou;
             }
         }
         return $killme->("Invalid copy location $name") unless $loc;
         $compiled{copy_location} = $loc;
-        $mgr->cache($base_org, "copy_loc.$name", $loc);
+        $mgr->cache($cp_base_org, "copy_loc.$name", $loc);
     }
 
     return \%compiled;

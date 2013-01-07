@@ -53,6 +53,36 @@ function my_init() {
         g.callnumbers = xul_param('callnumbers',{'concat':true,'JSON2js_if_cgi':true,'JSON2js_if_xpcom':true,'stash_name':'temp_callnumbers','clear_xpcom':true});
 
         /******************************************************************************************************/
+        /* If invoked from the Local Admin menu, rig up a fake item and disable save/create functionality */
+
+        if (xulG.admin) {
+            xulG.edit = 1;
+            var fake_item = new acp();
+            fake_item.id( -1 );
+            fake_item.barcode( 'fake_item' );
+            fake_item.call_number( -1 );
+            fake_item.circ_lib(ses('ws_ou'));
+            /* FIXME -- use constants; really, refactor this into a library somewhere that can be used by chrome and
+               remote xul for new copies */
+            fake_item.deposit(0);
+            fake_item.price(0);
+            fake_item.deposit_amount(0);
+            fake_item.fine_level(2); // Normal
+            fake_item.loan_duration(2); // Normal
+            fake_item.location(1); // Stacks
+            fake_item.status(0);
+            fake_item.circulate(get_db_true());
+            fake_item.holdable(get_db_true());
+            fake_item.opac_visible(get_db_true());
+            fake_item.ref(get_db_false());
+            fake_item.mint_condition(get_db_true());
+            g.copies = [ fake_item ];
+            $('save').hidden = true;
+            $('save').disabled = true;
+            $('non_unified_buttons').hidden = true;
+        }
+
+        /******************************************************************************************************/
         /* Get preference (if it exists) for copy location label order */
 
         g.cl_first = false; // Default to legacy OU first mode
@@ -410,7 +440,7 @@ g.delete_template = function() {
         if (typeof robj.ilsevent != 'undefined') {
             throw(robj);
         } else {
-            alert($('catStrings').getFormattedString('staff.cat.copy_editor.delete_template.confirm', [name]));
+            alert($('catStrings').getFormattedString('staff.cat.copy_editor.delete_template.success', [name]));
             setTimeout(
                 function() {
                     try {
@@ -609,10 +639,15 @@ g.apply_owning_lib = function(ou_id) {
                 g.map_acn[copy.call_number()] = volume;
             }
             var old_volume = g.map_acn[copy.call_number()];
-            var acn_blob = g.network.simple_request(
-                'FM_ACN_FIND_OR_CREATE',
-                [ses(),old_volume.label(),old_volume.record(),ou_id,old_volume.prefix().id(),old_volume.suffix().id(),old_volume.label_class().id()]
-            );
+            var acn_blob;
+            if (! xulG.admin) {
+                acn_blob = g.network.simple_request(
+                    'FM_ACN_FIND_OR_CREATE',
+                    [ses(),old_volume.label(),old_volume.record(),ou_id,old_volume.prefix().id(),old_volume.suffix().id(),old_volume.label_class().id()]
+                );
+            } else {
+                acn_blob = { 'acn_id' : -1 }; // spawned from Local Admin menu, so fake item and call number
+            }
             if (typeof acn_blob.ilsevent != 'undefined') {
                 g.error.standard_unexpected_error_alert($('catStrings').getFormattedString('staff.cat.copy_editor.apply_owning_lib.call_number.error', [copy.barcode()]), acn_blob);
                 continue;
@@ -633,6 +668,7 @@ g.apply_owning_lib = function(ou_id) {
 g.safe_to_change_owning_lib = function() {
     try {
         if (xulG.unified_interface) { return false; }
+        if (xulG.admin) { return false; }
         var safe = true;
         for (var i = 0; i < g.copies.length; i++) {
             var cn = g.copies[i].call_number();
@@ -1639,6 +1675,9 @@ g.populate_stat_cats = function() {
             var entries = g.copies[i].stat_cat_entries();
             if (!entries) entries = [];
             for (var j = 0; j < entries.length; j++) {
+                if (typeof g.data.hash.asc[ entries[j].stat_cat() ] != 'undefined') {
+                    continue; // We already have this stat cat, so assume we have everything we need for this lib
+                }
                 var lib = entries[j].owner(); if (typeof lib == 'object') lib = lib.id();
                 sc_libs[ lib ] = true;
             }
@@ -1649,6 +1688,9 @@ g.populate_stat_cats = function() {
         sc_libs = {};
         for (var i = 0; i < g.copies.length; i++) {
             var circ_lib = g.copies[i].circ_lib(); if (typeof circ_lib == 'object') circ_lib = circ_lib.id();
+            if (typeof g.data.hash.my_aou[ circ_lib ] != 'undefined') {
+                continue; // We should already have everything we need for this lib
+            }
             sc_libs[ circ_lib ] = true;
         }
         add_common_ancestors(sc_libs);
@@ -1667,6 +1709,9 @@ g.populate_stat_cats = function() {
                     }
                 }
                 var owning_lib = g.map_acn[ cn_id ].owning_lib(); if (typeof owning_lib == 'object') owning_lib = owning_lib.id();
+                if (typeof g.data.hash.my_aou[ owning_lib ] != 'undefined') {
+                    continue; // We should already have everything we need for this lib
+                }
                 sc_libs[ owning_lib ] = true;
             }
         }

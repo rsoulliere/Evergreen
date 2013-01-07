@@ -24,22 +24,30 @@ use Getopt::Long;
 use File::Spec;
 use File::Basename;
 use DBI;
+use Cwd qw/abs_path getcwd/;
 
-my ($dbhost, $dbport, $dbname, $dbuser, $dbpw, $help, $admin_user, $admin_pw);
+my ($dbhost, $dbport, $dbname, $dbuser, $dbpw, $help, $admin_user, $admin_pw, $load_all, $load_concerto);
 my $config_file = '';
 my $build_db_sh = '';
 my $offline_file = '';
 my $prefix = '';
 my $sysconfdir = '';
 my $pg_contribdir = '';
-my $create_db_sql = '';
-my $create_db_sql_9_1 = '';
+my $create_db_sql_contribs = '';
+my $create_db_sql_extensions = '';
 my @services;
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 
+my $cwd = getcwd();
+
 # Get the directory for this script
-my $script_dir = dirname($0);
+my $script_dir = abs_path(dirname($0));
+
+# Set the location and base file for sample data
+my $_sample_dir = abs_path(File::Spec->catdir($script_dir, '../../tests/datasets/sql/'));
+my $_sample_all = 'load_all.sql';
+my $_sample_concerto = 'load_concerto.sql';
 
 =over
 
@@ -127,7 +135,7 @@ sub get_settings {
 	$settings->{pw} = $settings->{pw} || $opensrf_config->findnodes($pw);
 }
 
-=item create_database() - Creates the database using create_database.sql
+=item create_database() - Creates the database using create_database_contribs.sql
 =cut
 sub create_database {
 	my $settings = shift;
@@ -140,13 +148,13 @@ sub create_database {
 	chomp $temp[0];
 	my $pgversion = $temp[0];
 	my $cmd;
-	# If it looks like it is 9.1 or greater, use create_database_9_1.sql
-	# Otherwise use create_database.sql
+	# If it looks like it is 9.1 or greater, use create_database_extensions.sql
+	# Otherwise use create_database_contribs.sql
 	if($pgversion >= '91') {
-		$cmd = 'psql -vdb_name=' . $settings->{db} . ' -d postgres -f ' . $create_db_sql_9_1;
+		$cmd = 'psql -vdb_name=' . $settings->{db} . ' -d postgres -f ' . $create_db_sql_extensions;
 	} else {
 		$cmd = 'psql -vdb_name=' . $settings->{db} . ' -vcontrib_dir=' . $pg_contribdir .
-			' -d postgres -f ' . $create_db_sql;
+			' -d postgres -f ' . $create_db_sql_contribs;
 	}
 	my @output = `$cmd 2>&1`;
 	if(grep(/(ERROR|No such file or directory)/,@output)) {
@@ -180,6 +188,26 @@ sub create_schema {
 		$settings->{pw};
 	system($cmd);
 	chdir($script_dir);
+}
+
+=item load_sample_data() - Loads sample bib records, copies, users, and transactions
+=cut
+sub load_sample_data {
+	my $settings = shift;
+
+	my $load_script = $_sample_all;
+	chdir($_sample_dir);
+	if ($load_concerto) {
+		$load_script = $_sample_concerto;
+	}
+	$ENV{'PGUSER'} = $settings->{user};
+	$ENV{'PGPASSWORD'} = $settings->{pw};
+	$ENV{'PGPORT'} = $settings->{port};
+	$ENV{'PGHOST'} = $settings->{host};
+	$ENV{'PGDATABASE'} = $settings->{db};
+	my @output = `psql -f $load_script 2>&1`;
+	print @output;
+	chdir($cwd);
 }
 
 =item set_admin_account() - Sets the administrative user's user name and password
@@ -216,13 +244,15 @@ my %settings;
 
 GetOptions("create-schema" => \$cschema, 
 		"create-database" => \$cdatabase,
+		"load-all-sample" => \$load_all,
+		"load-concerto-sample" => \$load_concerto,
 		"create-offline" => \$offline,
 		"update-config" => \$uconfig,
 		"config-file=s" => \$config_file,
 		"build-db-file=s" => \$build_db_sh,
 		"pg-contrib-dir=s" => \$pg_contribdir,
-		"create-db-sql=s" => \$create_db_sql,
-		"create-db-sql-9-1=s" => \$create_db_sql_9_1,
+		"create-db-sql-contribs=s" => \$create_db_sql_contribs,
+		"create-db-sql-extensions=s" => \$create_db_sql_extensions,
 		"pg-config=s" => \$pgconfig,
 		"admin-user=s" => \$admin_user,
 		"admin-password=s" => \$admin_pw,
@@ -265,12 +295,12 @@ if (!$pg_contribdir) {
 	$pg_contribdir = File::Spec->catdir($temp[0], 'contrib');
 }
 
-if (!$create_db_sql) {
-	$create_db_sql = File::Spec->catfile($script_dir, '../sql/Pg/create_database.sql');
+if (!$create_db_sql_contribs) {
+	$create_db_sql_contribs = File::Spec->catfile($script_dir, '../sql/Pg/create_database_contribs.sql');
 }
 
-if (!$create_db_sql_9_1) {
-	$create_db_sql_9_1 = File::Spec->catfile($script_dir, '../sql/Pg/create_database_9_1.sql');
+if (!$create_db_sql_extensions) {
+	$create_db_sql_extensions = File::Spec->catfile($script_dir, '../sql/Pg/create_database_extensions.sql');
 }
 
 if (!$offline_file) {
@@ -290,9 +320,12 @@ if ($cschema) { create_schema(\%settings); }
 if ($admin_user && $admin_pw) {
 	set_admin_account($admin_user, $admin_pw, \%settings);
 }
+if ($load_all || $load_concerto) {
+	load_sample_data(\%settings);
+}
 if ($offline) { create_offline_config($offline_file, \%settings); }
 
-if ((!$cdatabase && !$cschema && !$uconfig && !$offline && !$admin_pw) || $help) {
+if ((!$cdatabase && !$cschema && !$load_all && !$load_concerto && !$uconfig && !$offline && !$admin_pw) || $help) {
 	print <<HERE;
 
 SYNOPSIS
@@ -331,6 +364,14 @@ COMMANDS
     --create-database
         Creates the database itself, provided the user and password options
         represent a superuser.
+
+    --load-all-sample
+		Loads all sample data, including bibliographic records, call numbers,
+		copies, users, and transactions.
+
+    --load-concerto-sample
+		Loads a subset of sample data that includes just 100 bibliographic
+		records, and associated call numbers and copies.
 
 SERVICE OPTIONS
     --service

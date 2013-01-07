@@ -86,6 +86,8 @@ include::installation/server_installation.txt[]
 // Return to normal title levels.
 :leveloffset: 0
 
+include::installation/staff_client_installation.txt[]
+
 include::installation/server_upgrade.txt[]
 
 include::installation/edi_setup.txt[]
@@ -100,6 +102,24 @@ Introduction
 The Evergreen system allows a free range of customizations to every aspect of
 the system. Use this part of the documentation to become familiar with the tools
 for configuring the system as well as customizing the catalog and staff client.  
+
+// Push titles down one level.
+:leveloffset: 1
+
+include::admin_initial_setup/describing_your_organization.txt[]
+
+include::admin_initial_setup/describing_your_people.txt[]
+
+include::admin_initial_setup/migrating_your_data.txt[]
+
+include::admin_initial_setup/importing_via_staff_client.txt[]
+
+include::admin_initial_setup/ordering_materials.txt[]
+
+include::admin_initial_setup/designing_your_catalog.txt[]
+
+// Return to normal title levels.
+:leveloffset: 0
 
 include::admin/template_toolkit.txt[]
 
@@ -127,6 +147,8 @@ This part of the documentation deals with general Staff Client usage including
 logging in, navigation and shortcuts.
 
 
+include::admin/staff_client-login.txt[]
+
 include::admin/staff_client-tab_buttons.txt[]
 
 include::admin/staff_client-double_clicking.txt[]
@@ -138,6 +160,8 @@ include::admin/staff_client-sorting_columns.txt[]
 include::admin/staff_client-recent_searches.txt[]
 
 include::admin/staff_client-return_to_results_from_marc.txt[]
+
+include::admin/workstation_admin.txt[]
 
 System Administration From the Staff Client
 ===========================================
@@ -191,8 +215,6 @@ include::admin/hold_driven_recalls.txt[]
 include::admin/recent_staff_searches.txt[]
 
 include::admin/lsa-library_settings_editor.txt[]
-
-include::admin/lsa-receipt_template_editor.txt[]
 
 include::admin/lsa-standing_penalties.txt[]
 
@@ -272,6 +294,14 @@ include::circulation/circulation_patron_records.txt[]
 
 include::circulation/triggered_events.txt[]
 
+// Push titles down one level.
+:leveloffset: 1
+
+include::circulation/offline_mode.txt[]
+
+// Return to normal title levels.
+:leveloffset: 0
+
 Reports
 =======
 
@@ -333,7 +363,8 @@ communication protocols and standards used in Evergreen.
 // Push titles down one level.
 :leveloffset: 1
 
-// include::development/updating_translations_launchpad.txt[]
+include::development/intro_opensrf.txt[]
+include::development/updating_translations_launchpad.txt[]
 
 // Return to normal title levels.
 :leveloffset: 0

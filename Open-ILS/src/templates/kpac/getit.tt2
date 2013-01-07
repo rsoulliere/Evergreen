@@ -3,7 +3,7 @@
     PROCESS "opac/parts/misc_util.tt2"; # MARC 
     WRAPPER "kpac/parts/subpage.tt2";
     attrs = {marc_xml => ctx.marc_xml};
-    PROCESS get_marc_attrs args=attrs;
+    INCLUDE get_marc_attrs args=attrs;
     ctx.page_title = attrs.title | html 
 %]
 
@@ -25,7 +25,7 @@
                     [% END %]
 
                     <div class="top_side">
-                        <h2>get it!</h2>
+                        <h2>[% l('get it!') %]</h2>
                         <p>[% |l %]If you would like to place a hold on this item, please enter the 
                             following information and click<br />Submit below:[% END %]</p>
                     </div>
@@ -46,7 +46,7 @@
                                     </div>
                                     <a class="help_btn" href="javascript:;" 
                                         onclick="helpPopup('card_help', this, event);"><img 
-                                        src="[% ctx.media_prefix %]/images/kpac/question_mark.png" alt="pin number help" /></a>
+                                        src="[% ctx.media_prefix %]/images/kpac/question_mark.png" alt="[% l('pin number help') %]" /></a>
 
                                     <div class="clear">&nbsp;</div>
                                     <div class="hr">&nbsp;</div>
@@ -70,7 +70,7 @@
                                 <div class="pickup_lib">
                                     [%  def_lib = ctx.default_pickup_lib || ctx.physical_loc;
                                         PROCESS "opac/parts/org_selector.tt2";
-                                        PROCESS build_org_selector name='pickup_lib' 
+                                        INCLUDE build_org_selector name='pickup_lib' 
                                         value=def_lib id='pickup_lib' can_have_vols_only=1 %]
                                 </div>
                             </div>

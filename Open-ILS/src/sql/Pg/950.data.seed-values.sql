@@ -123,7 +123,7 @@ INSERT INTO config.metabib_field ( id, field_class, name, label, format, xpath )
     (6, 'title', 'proper', oils_i18n_gettext(6, 'Title Proper', 'cmf', 'label'), 'mods32', $$//mods32:mods/mods32:titleNonfiling[mods32:title and not (@type)]$$ );
 
 INSERT INTO config.metabib_field ( id, field_class, name, label, format, xpath, facet_xpath, facet_field ) VALUES 
-    (7, 'author', 'corporate', oils_i18n_gettext(7, 'Corporate Author', 'cmf', 'label'), 'mods32', $$//mods32:mods/mods32:name[@type='corporate' and mods32:role/mods32:roleTerm[text()='creator']]$$, $$//*[local-name()='namePart']$$, TRUE ); -- /* to fool vim */;
+    (7, 'author', 'corporate', oils_i18n_gettext(7, 'Corporate Author', 'cmf', 'label'), 'mods32', $$//mods32:mods/mods32:name[@type='corporate' and (mods32:role/mods32:roleTerm[text()='creator'] or mods32:role/mods32:roleTerm[text()='aut'] or mods32:role/mods32:roleTerm[text()='cre'])]$$, $$//*[local-name()='namePart']$$, TRUE ); -- /* to fool vim */;
 INSERT INTO config.metabib_field ( id, field_class, name, label, format, xpath, facet_xpath, facet_field ) VALUES 
     (8, 'author', 'personal', oils_i18n_gettext(8, 'Personal Author', 'cmf', 'label'), 'mods32', $$//mods32:mods/mods32:name[@type='personal' and mods32:role/mods32:roleTerm[text()='creator']]$$, $$//*[local-name()='namePart']$$, TRUE ); -- /* to fool vim */;
 INSERT INTO config.metabib_field ( id, field_class, name, label, format, xpath, facet_xpath, facet_field ) VALUES 
@@ -11840,3 +11840,42 @@ INSERT into config.org_unit_setting_type
         'bool'
     );
 
+INSERT INTO config.org_unit_setting_type
+    (name, grp, label, description, datatype)
+    VALUES (
+        'circ.lost.xact_open_on_zero',
+        'finance',
+        oils_i18n_gettext(
+            'circ.lost.xact_open_on_zero',
+            'Leave transaction open when lost balance equals zero',
+            'coust',
+            'label'
+        ),
+        oils_i18n_gettext(
+            'circ.lost.xact_open_on_zero',
+            'Leave transaction open when lost balance equals zero.  This leaves the lost copy on the patron record when it is paid',
+            'coust',
+            'description'
+        ),
+        'bool'
+    );
+
+INSERT INTO config.org_unit_setting_type
+    (name, grp, label, description, datatype)
+    VALUES (
+        'circ.patron_expires_soon_warning',
+        'circ',
+        oils_i18n_gettext(
+            'circ.patron_expires_soon_warning',
+            'Warn when patron account is about to expire',
+            'coust',
+            'label'
+        ),
+        oils_i18n_gettext(
+            'circ.patron_expires_soon_warning',
+            'Warn when patron account is about to expire. If set, the staff client displays a warning this many days before the expiry of a patron account. Value is in number of days, for example: 3 for 3 days.',
+            'coust',
+            'description'
+        ),
+        'integer'
+    );

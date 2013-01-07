@@ -93,6 +93,9 @@ sub test_and_create_hold_batch {
         ($res) = $self->method_lookup(
             'open-ils.circ.title_hold.is_possible')->run($auth, $params, $override ? $oargs : {});
         if ($res->{'success'} == 1) {
+
+            $params->{'depth'} = $res->{'depth'} if $res->{'depth'};
+
             my $ahr = construct_hold_request_object($params);
             my ($res2) = $self->method_lookup(
                 $override
@@ -315,13 +318,12 @@ sub create_hold {
         }
     }
 
+        # Check for hold expiration in the past, and set it to empty string.
+        $hold->expire_time(undef) if ($hold->expire_time && $U->datecmp($hold->expire_time) == -1);
+
     # set the configured expire time
     unless($hold->expire_time) {
-        my $interval = $U->ou_ancestor_setting_value($recipient->home_ou, OILS_SETTING_HOLD_EXPIRE);
-        if($interval) {
-            my $date = DateTime->now->add(seconds => OpenSRF::Utils::interval_to_seconds($interval));
-            $hold->expire_time($U->epoch2ISO8601($date->epoch));
-        }
+        $hold->expire_time(calculate_expire_time($recipient->home_ou));
     }
 
     $hold->requestor($e->requestor->id); 
@@ -556,7 +558,7 @@ sub retrieve_holds {
         if($available) {
             $holds_query->{where}->{shelf_time} = {'!=' => undef};
             # Maybe?
-            $holds_query->{where}->{pickup_lib} = {'+ahr' => 'current_shelf_lib'};
+            $holds_query->{where}->{pickup_lib} = {'=' => 'current_shelf_lib'};
         }
     }
 
@@ -683,11 +685,7 @@ sub uncancel_hold {
         $hold->request_lib, 'circ.holds.uncancel.reset_request_time', $e)) {
 
         $hold->request_time('now');
-        my $interval = $U->ou_ancestor_setting_value($hold->request_lib, OILS_SETTING_HOLD_EXPIRE);
-        if($interval) {
-            my $date = DateTime->now->add(seconds => OpenSRF::Utils::interval_to_seconds($interval));
-            $hold->expire_time($U->epoch2ISO8601($date->epoch));
-        }
+        $hold->expire_time(calculate_expire_time($hold->request_lib));
     }
 
     $hold->clear_cancel_time;
@@ -1014,6 +1012,22 @@ sub update_hold_impl {
         $logger->info("clearing current_copy and check_time for frozen hold ".$hold->id);
         $hold->clear_current_copy;
         $hold->clear_prev_check_time;
+        # Clear expire_time to prevent frozen holds from expiring.
+        $logger->info("clearing expire_time for frozen hold ".$hold->id);
+        $hold->clear_expire_time;
+    }
+
+    # If the hold_expire_time is in the past && is not equal to the
+    # original expire_time, then reset the expire time to be in the
+    # future.
+    if ($hold->expire_time && $U->datecmp($hold->expire_time) == -1 && $U->datecmp($hold->expire_time, $orig_hold->expire_time) != 0) {
+        $hold->expire_time(calculate_expire_time($hold->request_lib));
+    }
+
+    # If the hold is reactivated, reset the expire_time.
+    if(!$U->is_true($hold->frozen) && $U->is_true($orig_hold->frozen)) {
+        $logger->info("Reset expire_time on activated hold ".$hold->id);
+        $hold->expire_time(calculate_expire_time($hold->request_lib));
     }
 
     $e->update_action_hold_request($hold) or return $e->die_event;
@@ -3981,9 +3995,19 @@ sub rec_hold_count {
     return new_editor()->json_query($query)->[0]->{count};
 }
 
-
-
-
-
+# A helper function to calculate a hold's expiration time at a given
+# org_unit. Takes the org_unit as an argument and returns either the
+# hold expire time as an ISO8601 string or undef if there is no hold
+# expiration interval set for the subject ou.
+sub calculate_expire_time
+{
+    my $ou = shift;
+    my $interval = $U->ou_ancestor_setting_value($ou, OILS_SETTING_HOLD_EXPIRE);
+    if($interval) {
+        my $date = DateTime->now->add(seconds => OpenSRF::Utils::interval_to_seconds($interval));
+        return $U->epoch2ISO8601($date->epoch);
+    }
+    return undef;
+}
 
 1;
