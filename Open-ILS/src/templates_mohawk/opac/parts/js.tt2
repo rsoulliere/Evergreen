@@ -23,7 +23,7 @@
                 [% FOR summary IN ctx.mfhd_summaries %]
                 {
                     'id' : '[% summary.sre_id %]', 
-                    'label' : '[% summary.location %]',
+                    'label' : '[% summary.location | replace("'", "\\'") %]',
                     'entryNum' : '[% loop.index %]',
                     'owning_lib' : '[% summary.owning_lib %]'
                 },
@@ -65,6 +65,8 @@
 
     /* Set focus, and place the cursor at the end of the input string */
     dojo.addOnLoad(function() {
+        /* Don't error out if the object doesn't exist, like on advanced search pages */
+        if (dojo.byId('search_box')) {
         dijit.byId('search_box').focus();
 
         var sb_value = dijit.byId('search_box').value;
@@ -72,6 +74,7 @@
         if (sb_value) {
             dijit.byId('search_box').setValue(sb_value + ' ');
             dijit.byId('search_box').setValue(sb_value);
+        }
         }
     });
 </script>
