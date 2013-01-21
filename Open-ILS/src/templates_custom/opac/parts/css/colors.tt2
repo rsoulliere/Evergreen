@@ -1,0 +1,36 @@
+[%
+    css_colors = {
+        background = "#fff", # white
+        background_alert = "#ffcccc", # pink
+        background_invert = "#252525", # charcoal
+        text = "black", # black 
+        text_alert = "red", # red
+        text_attention = "#ffcc33", # pumpkin orange
+        text_badnews = "#f41d36", # cherry red
+        text_goodnews = "#1dd93c", # lime green
+        text_greatnews = "green", # green
+        text_invert = "#fff", # white
+        text_match = "#c00", # deep red
+        primary = "#990033", # Burgandy
+        primary_fade = "#F58220", # Orance
+        primary_offset = "#B20838", # Crimson
+        control = "#F58220", # Orange
+        mohawk_grey = "#53534A", # grey
+        accent_light = "#ccc", #  grey (light)
+        accent_lighter = "#ddd", #  grey (lighter)
+        accent_lighter2 = "#d8d8d8", #  grey (lighter again)
+        accent_lightest = "#eee", #  grey (lightest)
+        accent_ultralight = "#f0f0f0", # ivory
+        accent_medium = "#929292", # mohawk grey
+        accent_mediumdark = "#252525", # darker grey
+        accent_dark = "#000000", # black
+        accent_darker = "#333", # gun metal grey (darker)
+        border_standard = "#e9ebf3", # light grey-blue
+        border_dark = "black", # black
+        border_alert = "red", # red
+        button_text = "#fbf9f9", # off-white 
+        button_text_shadow = "#000000", # medium grey
+        table_heading = "#d8d8d8", # grey-blue
+    };
+    
+%]
