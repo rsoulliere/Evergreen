@@ -1,0 +1,13 @@
+<td class="login_boxes right_brain" align="center" valign="top" width="291">
+ <a href="http://brain.mohawkcollege.ca/HowTo/MyLibraryAccount.html"><img
+        src="[% ctx.media_prefix %]/images/questions.png" alt="[% l('Questions?') %]" style="margin-top:29px;" /></a>
+
+<div style="width:100%">
+ <a
+onClick="window.open('http://lib-wind.mohawkcollege.ca/Chat/library_catalogue.html','chat','width=430,height=375')"
+                href="#">
+                <img alt="Chat" src="/opac/images/BRAINchat_OPAC.png"
+style="margin-top:13px;"/> </a>
+</div>
+
+</td>
