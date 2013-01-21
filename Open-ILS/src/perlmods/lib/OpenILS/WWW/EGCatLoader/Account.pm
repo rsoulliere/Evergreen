@@ -1740,6 +1740,11 @@ sub load_myopac_bookbags {
                 }
             }
 
+            # we're done with our CStoreEditor.  Rollback here so 
+            # later calls don't cause a timeout, resulting in a 
+            # transaction rollback under the covers.
+            $e->rollback;
+
             my $query = $self->_prepare_bookbag_container_query(
                 $bookbag->id, $sorter, $modifier
             );
@@ -1753,6 +1758,7 @@ sub load_myopac_bookbags {
 
             my $items = $U->bib_container_items_via_search($bookbag->id, $query, $args)
                 or return Apache2::Const::HTTP_INTERNAL_SERVER_ERROR;
+
 
             my (undef, @recs) = $self->get_records_and_facets(
                 [ map {$_->target_biblio_record_entry->id} @$items ],
@@ -1770,13 +1776,19 @@ sub load_myopac_bookbags {
     # or "See all" popmenu items.
     if (my $add_rec = $self->cgi->param('add_rec')) {
         $self->ctx->{add_rec} = $add_rec;
-        $self->ctx->{where_from} = $self->ctx->{referer};
-        if ( my $anchor = $self->cgi->param('anchor') ) {
-            $self->ctx->{where_from} =~ s/#.*|$/#$anchor/;
+        # But not in the staff client, 'cause that breaks things.
+        unless ($self->ctx->{is_staff}) {
+            $self->ctx->{where_from} = $self->ctx->{referer};
+            if ( my $anchor = $self->cgi->param('anchor') ) {
+                $self->ctx->{where_from} =~ s/#.*|$/#$anchor/;
+            }
         }
     }
 
+    # this rollback may be a dupe, but that's OK because 
+    # cstoreditor ignores dupe rollbacks
     $e->rollback;
+
     return Apache2::Const::OK;
 }
 
@@ -1915,7 +1927,7 @@ sub load_myopac_bookbag_update {
             last unless $success;
         }
         # Redirect back where we came from if we have an anchor parameter:
-        if ( my $anchor = $cgi->param('anchor') ) {
+        if ( my $anchor = $cgi->param('anchor') && !$self->ctx->{is_staff}) {
             $url = $self->ctx->{referer};
             $url =~ s/#.*|$/#$anchor/;
         } elsif ($cgi->param('where_from')) {

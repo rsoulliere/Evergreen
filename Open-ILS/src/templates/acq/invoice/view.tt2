@@ -44,11 +44,13 @@
         </div>
     </div>
 
+    <!--
     <div dojoType="dijit.layout.ContentPane" layoutAlign="client">
+    -->
 
-        <div dojoType="dijit.layout.TabContainer" style="width: 96%; height: 100%;">
+        <div dojoType="dijit.layout.TabContainer" style="width: 96%; height: 100%;" doLayout='false'>
             <div dojoType="dijit.layout.ContentPane" 
-                class='oils-acq-detail-content-pane' title="Invoice" selected='true' style='height:600px'>
+                class='oils-acq-detail-content-pane' title="Invoice" selected='true'>
 
                 <script type='dojo/connect' event='onShow'>
                     // the table is left at display=none on subsequent tab views
@@ -195,8 +197,14 @@
                                 <option value="or">any</option>
                             </select>
                             <label for="acq-unified-conjunction">
-                                of the following terms:
-                            </label>
+                                of the following terms
+                            </label> (
+                            <input type="checkbox" id="acq-unified-build-progressively" />
+                            <label for="acq-unified-build-progressively">
+                                building the results list progressively
+                            </label> )
+
+
                         </div>
                         <div id="acq-unified-terms">
                             <table id="acq-unified-terms-table">
@@ -241,15 +249,15 @@
                         </div>
                         <table width='100%'><tr>
                             <td align='left'>
-                                <button onclick="performSearch(0)">[% l('Search') %]</button>
+                                <button onclick="smartSearchSubmitter()">[% l('Search') %]</button>
                                 <button onclick='addSelectedToInvoice()'>
                                     [% l('Add Selected Items to Invoice') %]
                                 </button>
                                 <span id='acq-inv-search-prev'>
-                                    <a href='javascript:performSearch(-1)'>[% l('Previous') %]</a>
+                                    <a href='javascript:performSearch(-1, true)'>[% l('Previous') %]</a>
                                 </span>
                                 <span>
-                                    <a href='javascript:performSearch(1)'>[% l('Next') %]</a>
+                                    <a href='javascript:performSearch(1, true)'>[% l('Next') %]</a>
                                 </span>
                             </td>
                             <td align='right'>
@@ -261,6 +269,9 @@
                             </td>
                         </tr></table>
                     </div> <!-- end search form -->
+                    <div style='border-bottom:1px solid #888;'>
+                        <input type='checkbox' onclick='selectSearchResults()'>&nbsp;[% l('Select All') %]</input>
+                    </div>
                     <div id='acq-unified-results-no_results'>
                         <b>[% l('No Results') %]</b>
                     </div>
@@ -299,7 +310,7 @@
                 </div>
             </div> <!-- tab 2 -->
         </div> <!-- end tabcontainer -->
-    </div> <!-- end contentpane -->
+    <!--</div>--> <!-- end contentpane -->
 </div>
 <div dojoType='openils.widget.ProgressDialog' jsId='progressDialog'></div>
 <div jsId='extraItemsDialog' dojoType="dijit.Dialog" title="Extra Items">

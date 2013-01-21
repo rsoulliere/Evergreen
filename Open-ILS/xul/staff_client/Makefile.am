@@ -135,8 +135,8 @@ stamp:
 	@/bin/date +"%Y%m%d.%H%M%S" > build/BUILD_ID
 	@if [ -n "${STAFF_CLIENT_BUILD_ID}" ]; then ( echo "Stamping with Build ID: ${STAFF_CLIENT_BUILD_ID}" ; echo ${STAFF_CLIENT_BUILD_ID} > build/BUILD_ID ) ; fi
 	@if [ -z "${STAFF_CLIENT_BUILD_ID}" ]; then ( echo "No Build ID for versioning" ; echo "none" > build/BUILD_ID ) ; fi
-	@sed -n -e '1 s/^.* \([^ ]*\)$$/\1/p' @top_srcdir@/README > build/VERSION
-	@if [ "${STAFF_CLIENT_VERSION}" == "master" ]; then echo "0${GIT_BRANCH}.${GIT_TAG}" > build/VERSION; fi 
+	@sed -n -e 's/^AC_INIT([^,]*, \([^,]*\),.*$$/\1/p' @top_srcdir@/configure.ac > build/VERSION
+	@if [ "${STAFF_CLIENT_VERSION}" == "trunk" ]; then echo "0${GIT_BRANCH}.${GIT_TAG}" > build/VERSION; fi 
 	@if [ -n "${STAFF_CLIENT_VERSION}" ]; then ( echo "Stamping with Version: ${STAFF_CLIENT_VERSION}" ; echo ${STAFF_CLIENT_VERSION} > build/VERSION ) ; fi
 	@if [ -z "${STAFF_CLIENT_VERSION}" ]; then ( echo "No Version" ; echo "none" > build/VERSION ) ; fi
 	@sed -e 's/\./_/g' -e 's/^\([0-9_]*\)$$/rel_&/' build/VERSION > build/STAMP_ID
@@ -159,6 +159,8 @@ stamp:
 	@if [ -n "${AUTOUPDATE_HOST}" ]; then echo "Applying automatic update host ${AUTOUPDATE_HOST}"; fi
 	@if [ -n "${AUTOUPDATE_HOST}" ]; then sed -i -e "s|::HOSTNAME::|${AUTOUPDATE_HOST}|" -e "s|https\?://\(https\?://\)|\1|" build/defaults/preferences/autoupdate.js; fi
 	@if [ -n "${AUTOUPDATE_HOST}" ]; then sed -i -e "s|::HOSTNAME::|${AUTOUPDATE_HOST}|" -e "s|https\?://\(https\?://\)|\1|" build/install.rdf; fi
+	@if [ -z "${INITIAL_HOST}" ]; then rm -f build/defaults/preferences/initialhost.js; fi
+	@if [ -n "${INITIAL_HOST}" ]; then sed -i -e "s/%INITIAL_HOST%/${INITIAL_HOST}/" build/defaults/preferences/initialhost.js; fi
 	@cp build/STAMP_ID PREV_STAMP_ID
 	@cp build/VERSION PREV_VERSION
 

@@ -6,7 +6,52 @@ Release notes
 Upgrade notes
 -------------
 
-Coming Soon.
+Log Protect (redaction)
+~~~~~~~~~~~~~~~~~~~~~~~
+To prevent sensitive information such as passwords from being logged
+in general activity logs, add the following XML chunk to the bottom of
+`opensrf_core.xml`, just inside the `<config>` section:
+
+[source, xml]
+----------------------------------------------------------------
+  ...
+  </routers>
+  <shared> <!-- new block starts here -->
+    <log_protect>
+      <match_string>open-ils.auth.authenticate.verify</match_string>
+      <match_string>open-ils.auth.authenticate.complete</match_string>
+      <match_string>open-ils.auth_proxy.login</match_string>
+      <match_string>open-ils.actor.user.password</match_string>
+      <match_string>open-ils.actor.user.username</match_string>
+      <match_string>open-ils.actor.user.email</match_string>
+      <match_string>open-ils.actor.patron.update</match_string>
+      <match_string>open-ils.cstore.direct.actor.user.create</match_string>
+      <match_string>open-ils.cstore.direct.actor.user.update</match_string>
+      <match_string>open-ils.cstore.direct.actor.user.delete</match_string>
+    </log_protect>
+  </shared> <!-- new block ends here -->
+</config>
+----------------------------------------------------------------
+
+EDI Order Template Updates
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+An updated EDI order template is now part of the stock data.  To avoid 
+clobbering potentially functional EDI templates, no upgrade script was 
+included to automatically upgrade existing templates.  To upgrade to the
+newest template:
+
+[source, sql]
+----------------------------------------------------------------
+UPDATE action_trigger.event_definition SET template = 
+$$
+...
+$$ WHERE id = 23;
+
+/* 
+Use the template value for event definition 23 (line 7995) in 
+950.data.seed-values.sql as the contents (...) of the above command.
+*/
+----------------------------------------------------------------
 
 New features
 ------------
@@ -17,7 +62,10 @@ Acquisitions
 ACQ Invoice Inline Lineitem Search and Add
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Invoice UI is how composed of two tabs, the main invoice tab and a new Search tab.  The search tab consists of a subset of the Acquisitions unified search interface.  The goal is to allow users to search for lineitems to invoice.  Search results may be added directly to the growing invoice.  A number of small usability features are included.
+The Invoice UI is now composed of two tabs, the main invoice tab and a new
+Search tab.  The search tab consists of a subset of the Acquisitions unified
+search interface.  The goal is to allow users to search for lineitems to
+invoice.  Search results may be added directly to the growing invoice.  A number of small usability features are included.
 
 Features
 ++++++++
@@ -52,9 +100,72 @@ EDI message if that lineitem can be linked to a known Evergreen lineitem in
 your system.  An Evergreen invoice item will be created for a whole-invoice
 tax.
 
+Enriched EDI
+^^^^^^^^^^^^
+
+Support for Enriched EDI with copy-level data via EDI in ORDER messages.
+
+Encumbrance-only Rollover
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new Library Setting allows the year-end close-out operation to roll over
+encumbrances while dumping any unspent money.
+
+Fund Report
+^^^^^^^^^^^
+
+A new IDL reporter view that provides summary information for funds for
+reporting. The resulting table looks like a fund with four additional fields:
+allocated_total, spent_total, encumbrance_total, and combined_balance.
+
+EDI Fetching and Parsing Enhancements / Repairs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This release includes various improvements to how Evergreen processes
+vendor EDI responses, including order responses and invoices.  Changes
+include architectural improvements as well as new features.
+
+Bug Fixes
++++++++++
+
+* Improved order response handling for cancelled items.
+* Deleting fund debits (encumbrances) for cancelled items.
+* Extracting invoice date
+* Invoices include quantity and amount paid (in addition to billed) to reduce
+  manual staff data entry
+* Proper handling of previously-cancelled (e.g. back-ordered) invoiced items.
+
+Architectural improvements
+++++++++++++++++++++++++++
+
+For EDI parsing, the Ruby libraries, Ruby HTTP gateway, and Business::EDI Perl
+modules are no longer needed.  They have been replaced with a single Perl
+module which handles EDI parsing.
+
+This reduces the complexity of the fetching and parsing layer.  Though the Ruby
+libraries and Ruby HTTP gateway are still needed for outbound EDI (for now), 
+the Perl Business::EDI modules are no longer needed at all, so they are no 
+longer installed.
+
+EDI order template improvements (no SQL upgrade script!)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Improved template for EDI purchase orders.  This theoretically just
+works better where the old template worked.  Corrections made for
+interactions with ULS, Midwest Tape, Baker & Taylor, and Recorded Books
+especially.  GIR segments in the right place.
+
+And also the template is just more maintainable now.
+
+**THERE IS NO UPGRADE SCRIPT INCLUDED**.  Sites using EDI may not
+necessarily want to mess with what they already have working.
+
+If you want the changes, and maybe you do, especially if you're doing
+enriched ordering and/or ordering from the vendors listed above, you can
+extract the template changes easily enough yourself from the
+950.data.seed-values.sql file.  See Upgrade Notes above.
+
 OPAC
 ~~~~
-
 
 TPAC: Simplified CSS Color Customization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,6 +283,58 @@ The user may also set a preference in their search preferences to
 disable this warning.  The setting only works when a user is logged
 in, of course.
 
+Kid's OPAC
+^^^^^^^^^^
+
+The Kids OPAC (KPAC) is a public catalog search that was designed for children
+and teens.  Colorful menu items,large buttons, and simple navigation make this
+an appealing search interface for kids.  Librarians will appreciate the flexible
+configuration of the KPAC.  Librarians can create links to canned search results
+for kids and can apply these links by branch.  The KPAC uses the same infrastructure
+as the Template Toolkit OPAC (TPAC), the adult catalog search, so you can easily
+extend the KPAC using the code that already exists in the TPAC.  Finally, third
+party content, such as reader reviews, can be integrated into the KPAC.
+
+
+Locale picker
+^^^^^^^^^^^^^
+
+In situations in which more than a single locale is configured, the TPAC header
+will display a locale picker based on the registered locales. 
+
+Hidden Place Hold Links
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The title-level 'Place Hold' link in TPAC will be hidden on the search result
+and record summary screens when there are no holdable copies on the bib. This
+is based on the copy, status and location holdable flags.
+
+When enabled in config.tt2, the 'Place Holds' link in TPAC will also be hidden
+if copies are available in the search location. 
+
+Library Selectors in Advanced Searches
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The library selector is now available on the numeric and expert search pages.
+
+Journal Title Search
+^^^^^^^^^^^^^^^^^^^^
+
+A journal title search is now available as a stock TPAC filter.
+
+Public Patron Notes
+^^^^^^^^^^^^^^^^^^^
+
+Public patron notes are now visible in the 'Account Summary' box of 'My
+Account'.
+
+Auto-Override Permissable Patron Hold Fail Events
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new Library Setting is available that tells TPAC to automatically override
+hold placement failure events in cases where the patron has the permission to
+do so. The goal is to skip the confirmation step previously required by patrons
+when overriding a TPAC hold.
 
 Cataloging
 ~~~~~~~~~~
@@ -294,7 +457,7 @@ Using the filter in a template
 
 [source, html]
 ---------------------------------------------------
-<span>[% ctx.filter_groups.reading_level.label %]<span>
+<span>[% ctx.filter_groups.reading_level.label %]</span>
 <span>
 [%
     INCLUDE 'opac/parts/filter_group_selector.tt2'
@@ -302,8 +465,30 @@ Using the filter in a template
     none_ok=1
     none_label=l('All')
 %]
-<span>
+</span>
 ---------------------------------------------------
+
+Standing Penalty CAPTURE and FULFILL Blocks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This feature adds two additional types of standing penalty blocks to manage
+holds. 
+
+When a user has a standing penalty containing 'CAPTURE' in the block list, the
+user can place holds (pending no 'HOLD' block), but no holds for the user will
+be captured. This is effectively a policy-based freeze of the hold.
+
+Users that have penalties with 'FULFILL' in the block list will be able to
+place holds and have their holds captured (i.e. delivered) but will not be able
+to check out the captured holds. This is basically a way to get patrons in to
+pay outstanding balances.
+
+Copy Location Additions to Circulation Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Similar to circulation modifiers, circ policies can now be based on copy
+location. This also adds copy location to the circ matrix weights and to circ
+limit sets.
 
 Staff Client
 ~~~~~~~~~~~~
@@ -368,3 +553,44 @@ The pipe is intended for cases where the urls entry may or may not already
 contain a query string, say for differences between OPACs where one requires
 that something be passed into the query string, but the other uses a path
 component instead.
+
+New Operator Change Features
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The operator change dialog has a new dropdown allowing the selection of a
+Temporary, Staff, or Permanent authtoken. The first option provides a temporary
+operator change as has typically been done through this menu item. 'Staff' uses
+a normal staff login authtoken for a multi-hour timeout. 'Permanent' is a staff
+change that disregards the previous login instead of allowing it to be
+recovered by using the menu item again.
+
+Additional Work Log Entries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Entries for bill payment and hold placement are now available in the 'Work Log'.
+
+SIP
+~~~
+
+Support for credit card payment type and fine items details
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support is now available to create a credit card payment type in the SIP Fee
+Paid message. There is also now support for SIP clients to retrieve and
+display a detailed/itemized list of billings to the patron.
+
+Staff Client Initial Hostname
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For fresh installs of the staff client a common issue is people remembering
+what hostname to specify. If you are building your own staff clients you can
+now fill this in automatically.
+
+You can specify this when configuring Evergreen with a new configure option:
+
+--with-initialhost=example.org
+
+It is also possible to specify when building the staff client itself using the
+INITIAL_HOST variable:
+
+make INITIAL_HOST=example.org build

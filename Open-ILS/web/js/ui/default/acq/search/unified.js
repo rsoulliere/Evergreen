@@ -129,7 +129,13 @@ function TermSelectorFactory(terms) {
         ) {
             var term = this.getTerm();
             var widgetKey = this.uniq;
-            var target = termManager.getLinkTarget(term);
+            var target;
+            try {
+                target = termManager.getLinkTarget(term);
+            } catch (E) {
+                void(0); /* ok for this to fail (it doesn't handle acqlia right,
+                            but we don't need it to in this case). */
+            };
 
             if (matchHow.getValue() == "__in") {
                 new openils.widget.XULTermLoader({
@@ -151,7 +157,6 @@ function TermSelectorFactory(terms) {
                 );
             } else if (term.hint == "acqlia" ||
                 (term.hint == "jub" && term.field == "eg_bib_id") ||
-                term.datatype == "org_unit" ||
                 (term.datatype == "link" && target == "au")) {
                 /* The test for jub.eg_bib_id is a special case to prevent
                  * AutoFieldWidget from trying to render a ridiculous dropdown
@@ -170,7 +175,7 @@ function TermSelectorFactory(terms) {
                 dojo.connect(wStore[widgetKey], 'onkeyup',
                     function(e) {
                         if(e.keyCode == dojo.keys.ENTER) {
-                            resultManager.go(termManager.buildSearchObject());
+                            resultManager.submitter();
                         }
                     }
                 );
@@ -199,7 +204,7 @@ function TermSelectorFactory(terms) {
                         dojo.connect(w.domNode, 'onkeyup',
                             function(e) {
                                 if(e.keyCode == dojo.keys.ENTER) {
-                                    resultManager.go(termManager.buildSearchObject());
+                                    resultManager.submitter();
                                 }
                             }
                         );
@@ -802,8 +807,12 @@ function ResultManager(liPager, poGrid, plGrid, invGrid) {
                 this.liPager.focusLi();
         }
 
-        if (!this.count_results)
-            this.show("no_results");
+        if (!this.count_results) {
+            if (this.no_results_popup)
+                alert(localeStrings.NO_RESULTS);
+            else
+                this.show("no_results");
+        }
         else this.finish(this.result_type);
     };
 
@@ -973,6 +982,10 @@ openils.Util.addOnLoad(
             dijit.byId("acq-unified-pl-grid"),
             dijit.byId("acq-unified-inv-grid")
         );
+
+        resultManager.submitter = function() {
+            resultManager.go(termManager.buildSearchObject());
+        };
 
         uriManager = new URIManager();
         if (uriManager.search_object) {

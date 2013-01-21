@@ -59,11 +59,14 @@
                                                         <em><a title="[% l("Perform an Author Search") %]"
                                                                 name='item_author'
                                                                 href="[%- 
-                                                                    authorquery = attrs.author | replace('[,\.:;]', '');
+                                                                    authorquery = attrs.author | replace('[#"^$\+\-,\.:;&|\[\]()]', '');
                                                                     mkurl(ctx.opac_root _ '/results', {qtype => 'author', query => authorquery}, ['page'])
                                                                     -%]">[% attrs.author | html %]</a></em>
-                                                        &nbsp;&nbsp;
-                                                        [% attrs.pubdate | html %]
+                                                                    [%- UNLESS CGI.param('detail_record_view')
+                                                                        OR (show_more_details.default == 'true'
+                                                                        OR show_more_details.default == 'hide')
+                                                                    %] [% attrs.pubdate | html %]
+                                                                    [%- END -%]
                                                     </div>
                                                     <table cellpadding="0" cellspacing="0" border="0"
                                                         class="results_info_table">
@@ -79,12 +82,12 @@
                                                         [% IF CGI.param('detail_record_view') %]
                                                         <!-- These fields are visible when viewing the results page in 'detailed' mode -->
 
-                                                        [% IF attrs.publisher %]
+                                                        [% IF attrs.pubinfo %]
                                                             <tr name="results_pub_tr">
                                                                 <td valign="top">
                                                                     <strong>[% l('Publisher:') %]</strong>
                                                                 </td>
-                                                                <td>[% attrs.publisher | html %]</td>
+                                                                <td>[% attrs.pubinfo | html %]</td>
                                                             </tr>
                                                         [% END %]
                                                         [% IF attrs.isbns.size > 0 %]
@@ -250,9 +253,9 @@
                                                         [% IF ENV.OILS_CONTENT_CAFE_USER %]
                                                         <div class="results_aux_utils result_util">
                                                             <a title="[% l('Reviews and More') %]" target='_blank' 
-                                                                href="[% ctx.proto %]://contentcafe2.btol.com/ContentCafeClient/ContentCafe.aspx?UserID=[%- 
+                                                                href="[% ctx.ext_proto %]://contentcafe2.btol.com/ContentCafeClient/ContentCafe.aspx?UserID=[%- 
                                                                     ENV.OILS_CONTENT_CAFE_USER %]&amp;Password=[%-
-                                                                    ENV.OILS_CONTENT_CAFE_PASS %]&amp;ItemKey=[% ident | uri %]&Options=Y">
+                                                                    ENV.OILS_CONTENT_CAFE_PASS %]&amp;ItemKey=[% ident | uri %]&amp;Options=Y">
                                                                 <img src='[% ctx.media_prefix %]/images/starz.png'/> 
                                                                 <span class="results_reviews">[% l('Reviews &amp; More') %]</span>
                                                             </a>

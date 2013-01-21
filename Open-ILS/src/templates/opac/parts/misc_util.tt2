@@ -42,10 +42,16 @@
         args.title = args.title | replace('[:;/]$', '');
 
         # Provide correct spacing between the subfields
-        titsubs = xml.findnodes('//*[@tag="245"]/*[@code]');
+        titsubs = xml.findnodes('//*[@tag="245"]/*[(@code) and (@code != "6") and (@code != "8")]');
         titsubs_content = [];
             FOR sub IN titsubs; titsubs_content.push(sub.textContent); END;
         args.title_extended = titsubs_content.join(" ");
+
+        args.pubplaces = [];
+        FOR sub IN xml.findnodes('//*[@tag="260"]/*[@code="a"]');
+            args.pubplaces.push(sub.textContent);
+        END;
+        args.pubplace = (args.pubplaces.size) ? args.pubplaces.0 : '';
 
         args.publishers = [];
         FOR sub IN xml.findnodes('//*[@tag="260"]/*[@code="b"]');
@@ -58,6 +64,9 @@
             args.pubdates.push(sub.textContent);
         END;
         args.pubdate = (args.pubdates.size) ? args.pubdates.0 : '';
+
+        # Full publisher info
+        args.pubinfo = "$args.pubplace $args.publisher $args.pubdate";
 
         args.summaries = [];
         FOR sub IN xml.findnodes('//*[@tag="520"]/*[@code="a"]');
@@ -212,8 +221,13 @@
                     NEXT IF cp.visible == 'false';
                     
                     loc = copy.findnodes('./*[local-name()="location"]');
+                    NEXT IF loc.getAttribute('opac_visible') == 'false';
+
                     circlib = copy.findnodes('./*[local-name()="circlib"]');
+                    NEXT IF circlib.getAttribute('opac_visible') == 'false';
+
                     status = copy.findnodes('./*[local-name()="status"]');
+                    NEXT IF status.getAttribute('opac_visible') == 'false';
 
                     holding = {
                         label => vol.label,
@@ -272,16 +286,10 @@
 
     # Get the library or location group
     # get_library()
+    # magically upgrades any use of 'loc' to 'locg', 
+    # which is a superset of 'loc'.
     BLOCK get_library;
-        IF !loc_name; 
-            loc_name = 'loc';
-            IF show_loc_groups; loc_name = 'locg'; END;
-        END;
-        IF !loc_value;
-            loc_value = CGI.param('loc') || ctx.search_ou;
-            IF show_loc_groups; 
-                loc_value = CGI.param('locg') || ctx.search_ou;
-            END;
-        END;
+        loc_name = 'locg';
+        loc_value = CGI.param(loc_name) || CGI.param('loc') || ctx.search_ou;
     END;
 %]

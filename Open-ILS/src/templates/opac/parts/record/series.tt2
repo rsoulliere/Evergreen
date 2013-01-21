@@ -6,18 +6,31 @@
 [% BLOCK render_series;
     results = [];
     FOR tag IN series_tags;
-        FOR node IN ctx.marc_xml.findnodes('//*[@tag="' _ tag _ '"]/*');
-            node_uri = node.textContent | uri;
-            node_html = node.textContent | html;
-            IF !loop.first;
-                results.last = result.last _ '<span>&mdash;</span>';
+        FOR node IN ctx.marc_xml.findnodes('//*[@tag="' _ tag _ '"]');
+            series = '';
+            series_link = '';
+            FOR subfield IN node.childNodes;
+                NEXT UNLESS subfield.nodeName == "subfield";
+                code = subfield.getAttribute('code');
+                NEXT UNLESS code.match('[a-z]');
+                node_uri = subfield.textContent.replace('[#"^$\+\-,\.:;&|\[\]()]', '') | uri;
+                node_html = subfield.textContent | html;
+                IF !loop.first;
+                    series = series _ ' ';
+                END;
+                series_link = series_link _ ' ' _ node_uri;
+                series = series _ ('<a href="' _ ctx.opac_root 
+                    _ '/results?qtype=series&amp;query=' _ series_link _ '&amp;loc='
+                    _ loc _ '">' _ node_html _ '</a>'
+                );
             END;
-            results.push('<a href="' _ ctx.opac_root 
-                _ '/results?qtype=series&amp;query=' _ node_uri _ '&amp;loc='
-                _ loc _ '">' _ node_html _ '</a>'
-            );
+            results.push(series);
         END;
     END; 
+    FOR entry IN results;
+    -%]
+    <li class='rdetail_series_value'>[% entry %]</li>
+    [%- END;
 END;
 %]
 
@@ -25,8 +38,6 @@ END;
     IF series_anchors.length > 0; %]
 <h2 class='rdetail_related_series'>[% l('Search for related items by series') %]</h2>
 <ul>
-    [%- FOR entry IN series_anchors %]
-    <li class='rdetail_series_value'>[% entry %]</li>
-    [% END %]
+    [% series_anchors %]
 </ul>
 [%- END %]

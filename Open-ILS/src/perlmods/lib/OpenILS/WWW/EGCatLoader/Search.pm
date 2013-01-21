@@ -47,11 +47,6 @@ sub _prepare_biblio_search_basics {
         }
         $query = "$qtype:$query" unless $qtype eq 'keyword' and $i == 0;
 
-        # Hack for journal title - completed!
-        if ($q eq 'jtitle') {
-            $query = "bib_level:s $query";
-        }
-
         $bool = ($bool and $bool eq 'or') ? '||' : '&&';
         $full_query = $full_query ? "($full_query $bool $query)" : $query;
     }
@@ -89,6 +84,11 @@ sub _prepare_biblio_search {
 
     if ($cgi->param("bookbag")) {
         $query .= " container(bre,bookbag," . int($cgi->param("bookbag")) . ")";
+    }
+
+    # Journal title hackery complete
+    if ($cgi->param("qtype") && $cgi->param("qtype") eq "jtitle") {
+        $query .= " bib_level(s)";
     }
 
     if ($cgi->param('pubdate') && $cgi->param('date1')) {
@@ -323,7 +323,7 @@ sub load_rresults {
         return $self->marc_expert_search(%args) if scalar($cgi->param("tag"));
         $self->timelog("Calling item barcode search");
         return $self->item_barcode_shortcut if (
-            $cgi->param("qtype") and ($cgi->param("qtype") eq "item_barcode")
+            $cgi->param("qtype") and ($cgi->param("qtype") eq "item_barcode") and not $internal
         );
         $self->timelog("Calling call number browse");
         return $self->call_number_browse_standalone if (
@@ -573,6 +573,9 @@ sub item_barcode_shortcut {
             $rec_ids, undef, {flesh => "{holdings_xml,mra,acnp,acns,bmp}"}
         );
         $self->timelog("Returned from calling get_records_and_facets() for item_barcode");
+
+        my $stat = $self->check_1hit_redirect($rec_ids);
+        return $stat if $stat;
 
         $self->ctx->{records} = [@data];
         $self->ctx->{search_facets} = {};
