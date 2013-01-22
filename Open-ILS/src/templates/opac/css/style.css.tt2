@@ -67,6 +67,11 @@ h2 {
     font-weight:bold;
 }
 
+h2.graphic880 {
+    font-size: [% css_fonts.size_bigger %];
+    font-weight:normal;
+}
+
 .hide_me, .hidden {
     display: none;
     visibility: hidden;
@@ -564,7 +569,7 @@ div.format_icon {
     padding:0;
     background: none;
     font-size: [% css_fonts.size_bigger %];
-    color: [% css_colors.accent_medium %];
+    color: [% css_colors.text %];
 }
 
 #main-content .left_brain .input_bg {
@@ -572,6 +577,18 @@ div.format_icon {
     background: [% css_colors.background %];
     width:167px;
     height:29px;
+}
+
+.login-help-box {
+    float: right;
+    width: 200px;
+    text-align: center;
+    margin-right: 25%;
+}
+
+.login-help-button {
+    font-size: [% css_fonts.size_biggest %];
+    padding: 1.5em;
 }
 
 #login-failed-message {

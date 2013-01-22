@@ -54,6 +54,21 @@
                                                         [% HTML.attributes(title => l('Display record details for "[_1]"', attrs.title)) %]
                                                         class='search_link'>[% attrs.title | html %]</a>
                                                 </div>
+[%-
+FOR entry IN attrs.graphic_titles;
+    FOR alt IN entry.graphic;
+        diratt = "";
+        IF alt.dir;
+            diratt = ' dir="' _ alt.dir _ '"';
+        END;
+-%]
+<div class="graphic880"[% diratt %]>
+    [% alt.value | html %]
+</div>
+[%-
+    END;
+END;
+-%]
                                                 <div>
                                                     <div>
                                                         <em><a title="[% l("Perform an Author Search") %]"
@@ -67,6 +82,22 @@
                                                                         OR show_more_details.default == 'hide')
                                                                     %] [% attrs.pubdate | html %]
                                                                     [%- END -%]
+[%-
+FOR entry IN attrs.graphic_authors;
+    FOR alt IN entry.graphic;
+        diratt = "";
+        IF alt.dir;
+            diratt = ' dir="' _ alt.dir _ '"';
+        END;
+-%]
+<div class="graphic880"[% diratt %]>
+    [% alt.value | html %]
+</div>
+[%-
+    END;
+END;
+-%]
+
                                                     </div>
                                                     <table cellpadding="0" cellspacing="0" border="0"
                                                         class="results_info_table">
@@ -87,7 +118,23 @@
                                                                 <td valign="top">
                                                                     <strong>[% l('Publisher:') %]</strong>
                                                                 </td>
-                                                                <td>[% attrs.pubinfo | html %]</td>
+                                                                <td>[% attrs.pubinfo | html %]
+[%-
+FOR entry IN attrs.graphic_pubinfos;
+    FOR alt IN entry.graphic;
+        diratt = "";
+        IF alt.dir;
+            diratt = ' dir="' _ alt.dir _ '"';
+        END;
+-%]
+<div class="graphic880"[% diratt %]>
+    [% alt.value | html %]
+</div>
+[%-
+    END;
+END;
+-%]
+</td>
                                                             </tr>
                                                         [% END %]
                                                         [% IF attrs.isbns.size > 0 %]
@@ -128,7 +175,23 @@
                                                                 <td valign="top">
                                                                     <strong>[% l('Edition:') %]</strong>
                                                                 </td>
-                                                                <td>[% attrs.edition | html %]</td>
+                                                                <td>[% attrs.edition | html %]
+[%-
+FOR entry IN attrs.graphic_editions;
+    FOR alt IN entry.graphic;
+        diratt = "";
+        IF alt.dir;
+            diratt = ' dir="' _ alt.dir _ '"';
+        END;
+-%]
+<div class="graphic880"[% diratt %]>
+    [% alt.value | html %]
+</div>
+[%-
+    END;
+END;
+-%]
+</td>
                                                             </tr>
                                                         [% END %]
                                                         [% IF attrs.phys_desc %]
@@ -261,9 +324,9 @@
                                                         [% IF ENV.OILS_CONTENT_CAFE_USER %]
                                                         <div class="results_aux_utils result_util">
                                                             <a title="[% l('Reviews and More') %]" target='_blank' 
-                                                                href="[% ctx.proto %]://contentcafe2.btol.com/ContentCafeClient/ContentCafe.aspx?UserID=[%- 
+                                                                href="[% ctx.ext_proto %]://contentcafe2.btol.com/ContentCafeClient/ContentCafe.aspx?UserID=[%- 
                                                                     ENV.OILS_CONTENT_CAFE_USER %]&amp;Password=[%-
-                                                                    ENV.OILS_CONTENT_CAFE_PASS %]&amp;ItemKey=[% ident | uri %]&Options=Y">
+                                                                    ENV.OILS_CONTENT_CAFE_PASS %]&amp;ItemKey=[% ident | uri %]&amp;Options=Y">
                                                                 <img src='[% ctx.media_prefix %]/images/starz.png'/> 
                                                                 <span class="results_reviews">[% l('Reviews &amp; More') %]</span>
                                                             </a>
